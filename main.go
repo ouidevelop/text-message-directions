@@ -53,33 +53,6 @@ type message struct {
 	AccountSid    string
 }
 
-func removeBold(str string) string {
-	inBold := false
-	newStr := ""
-	for i, r := range str {
-		if inBold {
-			newStr += strings.ToUpper(string(r))
-		} else {
-			newStr += string(r)
-		}
-		if string(r) == ">" && string(str[i-1]) == "b" && string(str[i-2]) == "<" {
-			inBold = true
-		}
-		if string(r) == ">" && string(str[i-1]) == "b" && string(str[i-2]) == "/" && string(str[i-3]) == "<" {
-			inBold = false
-		}
-	}
-
-	re := regexp.MustCompile(`<b>|<\/B>`)
-	newStr = re.ReplaceAllString(newStr, "")
-
-	re = regexp.MustCompile(`<div style="font-size:0.9em">`)
-	newStr = re.ReplaceAllString(newStr, " (")
-	re = regexp.MustCompile(`<\/div>`)
-	newStr = re.ReplaceAllString(newStr, ") ")
-	return newStr
-}
-
 func main() {
 
 	http.HandleFunc("/sms", receiveTextsHandler)
@@ -90,7 +63,6 @@ func main() {
 	if twilioID == "" {
 		log.Fatal("TWILIO_ID environment variable not set")
 	}
-
 	twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
 	if twilioAuthToken == "" {
 		log.Fatal("TWILIO_AUTH_TOKEN environment variable not set")
@@ -129,7 +101,6 @@ func receiveTextsHandler(w http.ResponseWriter, r *http.Request) {
 	m := message{}
 
 	decoder := schema.NewDecoder()
-	// r.PostForm is a map of our POST form values
 	err = decoder.Decode(&m, r.PostForm)
 	if err != nil {
 		fmt.Println("problem decoding form", err)
@@ -159,9 +130,8 @@ func getDirections(m string) (string, error) {
 	} else {
 		return directions, errors.New("directions malformed")
 	}
-	fmt.Println("1")
 
-	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBYsgGoxFUK8cDI2cm177AJb9jbthfpNsY"))
+	c, err := maps.NewClient(maps.WithAPIKey(mapsAPIKey))
 	if err != nil {
 		fmt.Println("problem setting up google maps client: ", err)
 		return directions, err
@@ -177,7 +147,6 @@ func getDirections(m string) (string, error) {
 		fmt.Println("problem getting directions: ", err)
 		return directions, err
 	}
-	fmt.Println("3")
 
 	for _, route := range resp {
 		legs := route.Legs
@@ -189,13 +158,39 @@ func getDirections(m string) (string, error) {
 		}
 	}
 
-	fmt.Println("4")
 	fmt.Println("directions, error : ", directions, err)
 	return directions, err
 }
 
 func send(cl *gotwilio.Twilio, from string, to string, body string) {
 	fmt.Println("about to send message!")
-	res, exeption, err := cl.SendSMS(from, to, body, "", "") // todo: should not ignore those returns
+	res, exeption, err := cl.SendSMS(from, to, body, "", "")
 	fmt.Println("res, exeption, err", res, exeption, err)
+}
+
+func removeBold(str string) string {
+	inBold := false
+	newStr := ""
+	for i, r := range str {
+		if inBold {
+			newStr += strings.ToUpper(string(r))
+		} else {
+			newStr += string(r)
+		}
+		if string(r) == ">" && string(str[i-1]) == "b" && string(str[i-2]) == "<" {
+			inBold = true
+		}
+		if string(r) == ">" && string(str[i-1]) == "b" && string(str[i-2]) == "/" && string(str[i-3]) == "<" {
+			inBold = false
+		}
+	}
+
+	re := regexp.MustCompile(`<b>|<\/B>`)
+	newStr = re.ReplaceAllString(newStr, "")
+	re = regexp.MustCompile(`<div style="font-size:0.9em">`)
+	newStr = re.ReplaceAllString(newStr, " (")
+	re = regexp.MustCompile(`<\/div>`)
+	newStr = re.ReplaceAllString(newStr, ") ")
+	
+	return newStr
 }
