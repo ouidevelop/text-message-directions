@@ -102,6 +102,11 @@ func receiveTextsHandler(w http.ResponseWriter, r *http.Request) {
 
 	directions, err := getDirections(m.Body)
 
+	if err != nil {
+		log.Println(err)
+		directions = err.Error()
+	}
+
 	cl := gotwilio.NewTwilioClient(twilioID, twilioAuthToken)
 	send(cl, "+13123131234", m.From, directions)
 }
