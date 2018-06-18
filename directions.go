@@ -5,6 +5,7 @@ import (
 	"errors"
 	"googlemaps.github.io/maps"
 	"log"
+	"math/rand"
 	"regexp"
 	"strings"
 )
@@ -79,4 +80,14 @@ func removeBold(str string) string {
 	newStr = re.ReplaceAllString(newStr, ") ")
 
 	return newStr
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }

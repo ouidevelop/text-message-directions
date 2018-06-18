@@ -1,0 +1,34 @@
+{
+	"ImportPath": "github.com/ouidevelop/text-message-directions",
+	"GoVersion": "go1.10",
+	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/schema",
+			"Rev": "8b1100835db5bbdae88541510f70d114b91a7e4d"
+		},
+		{
+			"ImportPath": "github.com/sfreiberg/gotwilio",
+			"Rev": "58125ef28e4b5d7ab5328593099ae8cac5fcf6a2"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "66aacef3dd8a676686c7ae3716979581e8b03c47"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context/ctxhttp",
+			"Rev": "66aacef3dd8a676686c7ae3716979581e8b03c47"
+		},
+		{
+			"ImportPath": "googlemaps.github.io/maps",
+			"Rev": "63cacee19f9cd758682799977dfbc3b3e0deabe2"
+		},
+		{
+			"ImportPath": "googlemaps.github.io/maps/internal",
+			"Rev": "63cacee19f9cd758682799977dfbc3b3e0deabe2"
+		}
+	]
+}

@@ -30,24 +30,14 @@ type query struct {
 }
 
 type message struct {
-	Body string
-	From string
+	Body        string
+	From        string
 	FromCountry string
 }
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-}
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
 
 func main() {
@@ -74,7 +64,7 @@ func main() {
 
 	http.HandleFunc("/sms", receiveTextsHandler)
 	http.HandleFunc("/directions", directionsHandler) //for demo purposes
-	log.Println("Magic happening on port " + "8080")
+	log.Println("Magic happening on port " + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
@@ -118,7 +108,7 @@ func receiveTextsHandler(w http.ResponseWriter, r *http.Request) {
 
 // todo: set up Status Callback URL on twilio to make sure message was sent
 // todo: set up premium sms provider?
-	//http://www.truesenses.com/website/pages/smspricingpremiumrate/
-	//http://gateway.txtnation.com/solutions/sms/premium/
+//http://www.truesenses.com/website/pages/smspricingpremiumrate/
+//http://gateway.txtnation.com/solutions/sms/premium/
 // todo: add tests
 // todo: clean up code
