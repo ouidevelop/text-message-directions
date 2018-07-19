@@ -48,11 +48,11 @@ func init() {
 
 func main() {
 
-	mysqlPassword := os.Getenv("MYSQL_PASSWORD")
-	if mysqlPassword == "" {
-		log.Fatal("MYSQL_PASSWORD environment variable not set")
-	}
-	DB = startDB(mysqlPassword)
+	//mysqlPassword := os.Getenv("MYSQL_PASSWORD")
+	//if mysqlPassword == "" {
+	//	log.Fatal("MYSQL_PASSWORD environment variable not set")
+	//}
+	//DB = startDB(mysqlPassword)
 
 	twilioID = os.Getenv("TWILIO_ID")
 	if twilioID == "" {
