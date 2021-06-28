@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+  <meta name="description" content="Stop paying street sweeping fines. Sign up for free text message alerts based on your local street sweeping schedule. Don't fear the sweeper!">
+  <meta name="keywords" content="text, message, reminder, app, street, sweeping, cleaning, schedule, tickets, cell phone">
+  <meta name="author" content="Marine Guillanton">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Avoid Street Sweeping Tickets - Don't Fear the Sweeper</title>
+	<link href="https://fonts.googleapis.com/css?family=Pavanam" rel="stylesheet">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="style.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+	<script src='ngMask.min.js'></script>
+	<script src="libphonenumber-js.min.js"></script>
+	<script src="app.min.js"></script>
+</head>
+
+<body class="blue" ng-app="dontFearTheSweeper" ng-controller="signup" ng-cloak>
+	<div class="main">
+
+		<div class="title">
+			<h2>(Warning: in their fight against spam, this service sometimes gets blocked by phone carriers. I know for sure tmobile had this issue, which should be fixed now. Because of this, unfortunately I can't guarantee the messages will always get to you. Sorry for the hassle, I'm working on it but it's partly out of my hands)</h2>
+			<h1>Don't Fear the Sweeper</h1>
+			<h2>Sign up for Street Sweeping Reminders!</h2>
+		</div>
+
+		<div class="sign-up">
+
+			<form class="form" role="form">
+				<div class="step select-timezone">
+					<span class="description">Start by selecting your timezone: </span>
+					<div class="dropdown" title="timezone">
+						<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+							<span ng-if="!TimezoneButton">Timezone</span>
+							<span ng-cloak>{{TimezoneButton}}</span>
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" aria-labelledby="timeZone" role="menu">
+							<li><a ng-click="setTimeZone('Pacific/Honolulu', 'Hawaii Time')" href="">(GMT-10:00) Hawaii Time</a></li>
+							<li><a ng-click="setTimeZone('America/Anchorage', 'Alaska Time')" href="">(GMT-08:00) Alaska Time</a></li>
+							<li><a ng-click="setTimeZone('America/Los_Angeles', 'Pacific Time')" href="">(GMT-07:00) Pacific Time</a></li>
+							<li><a ng-click="setTimeZone('America/Denver', 'Mountain Time')" href="">(GMT-06:00) Mountain Time</a></li>
+							<li><a ng-click="setTimeZone('America/Phoenix', 'Mountain Time - Arizona')" href="">(GMT-07:00) Mountain Time - Arizona</a></li>
+							<li><a ng-click="setTimeZone('America/Chicago', 'Central Time')" href="">(GMT-05:00) Central Time</a></li>
+							<li><a ng-click="setTimeZone('America/New_York', 'Eastern Time')" href="">(GMT-04:00) Eastern Time</a></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="step select-alert-times">
+					<span class="description">Which day(s) of the month do you have street sweeping?</span>
+					<div class="input multiple-input" ng-repeat="alert in Alert.times track by $index">
+						<div class="group" role="group" aria-label="...">
+							<div class="btn-group" title="nth-week">
+								<button class="btn btn-default dropdown-toggle nth-week" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+									<span ng-if="alert.nthWeek === 'Nth'">Nth</span>
+									<span ng-cloak>{{nthWeekMap[alert.nthWeek]}}</span>
+									<span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu" aria-labelledby="daySetup" role="menu">
+									<li><a ng-click="setNthWeek(1, $index)" href="">First</a></li>
+									<li><a ng-click="setNthWeek(2, $index)" href="">Second</a></li>
+									<li><a ng-click="setNthWeek(3, $index)" href="">Third</a></li>
+									<li><a ng-click="setNthWeek(4, $index)" href="">Fourth</a></li>
+								</ul>
+							</div>
+							<div class="btn-group" title="weekday">
+								<button class="btn btn-default dropdown-toggle weekday" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+									<span ng-if="alert.weekday === 'Weekday'">Weekday</span>
+									<span ng-cloak>{{weekdayMap[alert.weekday]}}</span>
+									<span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu" aria-labelledby="weekSetup" role="menu">
+									<li><a ng-click="setWeekday(0, $index)" href="">Sunday</a></li>
+									<li><a ng-click="setWeekday(1, $index)" href="">Monday</a></li>
+									<li><a ng-click="setWeekday(2, $index)" href="">Tuesday</a></li>
+									<li><a ng-click="setWeekday(3, $index)" href="">Wednesday</a></li>
+									<li><a ng-click="setWeekday(4, $index)" href="">Thursday</a></li>
+									<li><a ng-click="setWeekday(5, $index)" href="">Friday</a></li>
+									<li><a ng-click="setWeekday(6, $index)" href="">Saturday</a></li>
+								</ul>
+							</div>
+						</div>
+						<button type="button" class="minus-btn btn btn-default" ng-click="removeAlertTime($index)" ng-if="Alert.times.length > 1">
+							<span>Remove</span>
+						</button>
+					</div>
+					<button type="button" class="btn btn-default" ng-click="addAlertTime()" ng-if="Alert.times.length <= 7">
+						<span>Add Another Day</span>
+					</button>
+					<span class="sub-description">You will be reminded at 7pm the night before your selected sweeping day(s).</span class="sub-description">
+				</div>
+
+				<div class="step verification">
+					<span class="description">Request phone verification code: </span>
+					<div class="input-group phone-input">
+						<input type="text" class="form-control" placeholder="Phone #" aria-describedby="phone-number" ng-model="Alert.phoneNumber" mask="(999) 999-9999" clean="true">
+						<span ng-if="!verificationCodeRequested" class="input-group-btn">
+						<button class="btn btn-default" type="submit" ng-click="startVerification()">Get Code</button>
+					</span>
+					</div>
+					<div ng-if="!isValidPhoneNumber(Alert.phoneNumber)" class="valid-check">Phone number not valid</div>
+					<div ng-if="isValidPhoneNumber(Alert.phoneNumber)" class="valid-check">Phone number valid!</div>
+					<span ng-if="verificationCodeRequestError">
+						<span>You are having a problem requesting a verification code? Please email </span>
+						<a href= "mailto:ouidevelop@gmail.com">
+							<span>ouidevelop@gmail.com</span>
+						</a>
+						<span> for help.</span>
+					</span>
+				</div>
+				<div ng-if="verificationCodeRequested" class="step verification">
+					<span class="description">Now just type in the verification code to start getting notifications!</span>
+					<div class="input-group phone-input">
+						<input type="text" class="form-control" placeholder="5555" aria-describedby="verification-token" ng-model="Alert.token">
+						<span ng-if="!verified" class="input-group-btn">
+						 <button class="btn btn-default" type="submit" ng-click="verifyToken()" onClick="ga('send','event',{'eventCategory':'Verify Button','eventAction':'Click'});">Verify Phone</button>
+						</span>
+					</div>
+					<span ng-if="verified" class="feedback-message">You have successfully created your new street sweeping alerts!</span>
+					<span ng-if="verifyError" class="feedback-message">
+						<span>There has been a problem creating your new street sweeping alerts. Please email </span>
+						<a href= "mailto:ouidevelop@gmail.com">
+							<span>ouidevelop@gmail.com</span>
+						</a>
+						<span> for help.</span>
+					</span>
+				</div>
+			</form>
+
+			<form class="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+				<span class="donate-message">Sending you text message reminders costs money.</span>
+				<span class="donate-message">If you would like to, feel free to donate!</span>
+				<input type="hidden" name="cmd" value="_s-xclick">
+				<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+				">
+				<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+				<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+			</form>
+
+			<span class="email">
+				<span>Questions? Email: </span>
+				<a href= "mailto:ouidevelop@gmail.com">
+					<span>ouidevelop@gmail.com</span>
+				</a>
+				<p>Or check us out at:
+				<a href= "http://ouidevelop.com">
+					<span>OuiDevelop.com</span>
+				</a>
+				</p>
+			</span>
+		</div>
+	</div>
+
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-98284391-1', 'auto');
+		ga('send', 'pageview');
+
+	</script>
+
+</body>
+</html>

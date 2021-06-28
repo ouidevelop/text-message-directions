@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Don't Fear The Sweeper is a reminder app that sends you text message before your street sweeping days.">
+    <meta name="keywords" content="text message reminder app street sweeping">
+    <meta name="author" content="Marine Guillanton">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Fear the Sweeper</title>
+    <link href="https://fonts.googleapis.com/css?family=Pavanam" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script src='../ngMask.min.js'></script>
+    <script src="../libphonenumber-js.min.js"></script>
+    <script src="../app.js"></script>
+</head>
+
+<body class="blue" ng-app="dontFearTheSweeper" ng-controller="signup" ng-cloak>
+
+<div class="main">
+
+    <div class="title">
+        <h1>Don't Fear the Sweeper</h1>
+        <h2>Remove Alerts</h2>
+    </div>
+
+    <div class="sign-up">
+
+        <form class="form" role="form">
+
+            <div class="step verification">
+                <span class="description">Verify your phone number: </span>
+                <div class="input-group phone-input">
+                    <input type="text" class="form-control" placeholder="(555) 555-5555" aria-describedby="phone-number" ng-model="Alert.phoneNumber" mask="(999) 999-9999" clean="true">
+                    <span ng-if="!verificationCodeRequested" class="input-group-btn">
+							<button class="btn btn-default btn-blue" type="submit" ng-click="startVerification(true)">Get Code</button>
+						</span>
+                </div>
+                <div ng-if="!isValidPhoneNumber(Alert.phoneNumber)" class="valid-check">Phone number not valid</div>
+                <div ng-if="isValidPhoneNumber(Alert.phoneNumber)" class="valid-check">Phone number valid!</div>
+                <span ng-if="verificationCodeRequestError">
+						<span>You are having a problem requesting a verification code? Please email </span>
+						<a href= "mailto:ouidevelop@gmail.com">
+							<span>ouidevelop@gmail.com</span>
+						</a>
+						<span> for help.</span>
+					</span>
+            </div>
+            <div ng-if="verificationCodeRequested" class="step verification">
+                <span class="description">Enter Verification Code: </span>
+                <div class="input-group phone-input">
+                    <input type="text" class="form-control" placeholder="5555" aria-describedby="verification-token" ng-model="Alert.token">
+                    <span ng-if="!removed" class="input-group-btn">
+						 	<button class="btn btn-default btn-blue" type="submit" ng-click="deleteAccount()">Remove Reminders!</button>
+						</span>
+                </div>
+                <span ng-if="removed" class="feedback-message">You have successfully removed your alerts!</span>
+                <span ng-if="invalidToken" class="feedback-message"> incorrect token </span>
+                <span ng-if="removeError" class="feedback-message">
+						<span>There has been a problem removing your alerts. Please email </span>
+						<a href= "mailto:ouidevelop@gmail.com">
+							<span>ouidevelop@gmail.com</span>
+						</a>
+						<span> for help.</span>
+					</span>
+            </div>
+        </form>
+
+        <span class="email">
+				<span>Questions? Email: </span>
+				<a href= "mailto:ouidevelop@gmail.com">
+					<span>ouidevelop@gmail.com</span>
+				</a>
+			</span>
+
+    </div>
+</div>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-98284391-1', 'auto');
+    ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

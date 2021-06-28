@@ -1,0 +1,6 @@
+node_modules/
+.idea/
+dontfearthesweeper
+gin-bin
+.DS_Store
+design/
