@@ -18,16 +18,16 @@ Use the form `info for [place]` to get the phone number and address of a busines
 
 For example:
 
-`info for uc berkeley`.
+`info for uc berkeley`
 
 Use the form `find [type of place] near [specific place]` to get up to 20 nearby places.
 
 For example:
 
-`find grocery near uc berkeley`.
+`find grocery near uc berkeley`
 
 # Weather
-Use the form `weather for [zip or postal code]`.
+Use the form `weather for [zip or postal code]`
 
 For example:
 
