@@ -20,6 +20,7 @@ For example:
 
 `info for uc berkeley`.
 
+
 Use the form `find [type of place] near [specific place]` to get up to 20 nearby places.
 
 For example:
