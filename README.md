@@ -27,7 +27,7 @@ For example:
 `find grocery near uc berkeley`.
 
 # Weather
-Use the form `weather to [zip or postal code]`.
+Use the form `weather for [zip or postal code]`.
 
 For example:
 
