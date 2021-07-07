@@ -3,15 +3,25 @@ This is a service that provides text message based info for people who don't hav
 You have to send a text message to 1 (312) 313-1234 with the right format depending on what you want
 
 # Directions
-The form should be `[mode] from [origin] to [destination]`. For example: `drive from UC berkeley to Oakland airport`. The possible modes of transportation are 'drive', 'walk', 'bike', and 'transit'.
+Use the form `[drive or walk or bike or transit] from [origin] to [destination]`.
+For example:
+`drive from UC berkeley to Oakland airport`
+`transit from los angeles airport to santa monica`
+`bike from santa monica to venice beach`
 
 # Contact info
-You can also get the phone number and address of a businesse with the format `info for [place]`. For example `info for uc berkeley`.
+Use the form `info for [place]` to get the phone number and address of a business.
+For example:
+`info for uc berkeley`.
 
-You can get up to 20 nearby places with `find [type of place] near [specific place]`. For example: `find grocery near uc berkeley`.
+Use the form `find [type of place] near [specific place]` to get up to 20 nearby places.
+For example:
+`find grocery near uc berkeley`.
 
 # Weather
-Use the form: "weather for 55555" (with your zip/postal code instead of 55555) 
+Use the form `weather to [zip or postal code]`.
+For example:
+`weather for 10017`
 
 # Donation
 This project costs money every time it sends or receives a text message. If you'd like to help the project keep running, feel free to donate here:
