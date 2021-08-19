@@ -76,7 +76,11 @@ func Get(m string) (string, error) {
 	var from string
 	var to string
 
-	directionPart := strings.Split(m, " from ")[1]
+	parts := strings.Split(m, " from ")
+	if len(parts) < 2 {
+		return "", ErrMalformed
+	}
+	directionPart := parts[1]
 	fromAndTo := strings.Split(directionPart, " to ")
 
 	if len(fromAndTo) > 1 {
