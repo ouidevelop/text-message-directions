@@ -50,7 +50,7 @@ func DirectionsHandler(w http.ResponseWriter, r *http.Request) {
 	messages = sms.SplitLongBody(d)
 
 	if len(messages) > 0 {
-		fmt.Println("bob::::", len(d), len(messages[0]), len(messages))
+		fmt.Println("length of total message, length of first message, different segments", len(d), len(messages[0]), len(messages))
 	} else {
 		fmt.Println("no messages", len(d))	
 	}

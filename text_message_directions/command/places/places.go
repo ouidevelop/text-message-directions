@@ -2,7 +2,6 @@ package places
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -34,8 +33,6 @@ func Get(input string) (string, error) {
 	})
 
 	info := ""
-
-	fmt.Println("from places: ", resp.Results)
 
 	for index, result := range resp.Results {
 		placeDetails, err := mapsClient.PlaceDetails(context.Background(), &maps.PlaceDetailsRequest{

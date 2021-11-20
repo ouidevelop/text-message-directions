@@ -109,6 +109,10 @@ func Get(m string) (string, error) {
 		return directions, err
 	}
 
+	if len(resp) == 0 {
+		return directions, errors.New("google maps was unable to find directions for your query. sorry about that.")
+	}
+
 	for _, route := range resp {
 		legs := route.Legs
 		fmt.Println("num legs: ", len(legs))

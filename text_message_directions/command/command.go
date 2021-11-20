@@ -12,8 +12,7 @@ import (
 func Do (input string) (string, error) {
 
 	input = strings.ToLower(input)
-	fmt.Println("input2", "$$"+input+"%%")
-	
+
 	var response string
 	var err error
 
@@ -31,6 +30,8 @@ func Do (input string) (string, error) {
 			return "", errors.New("command should be in form 'weather for [zip]' (works in USA and Canada)")
 		}
 		response, err = weather.GetWeather(strings.TrimPrefix(input, "weather for "))
+	} else if strings.HasPrefix(input, "weather ") {
+		response, err = weather.GetWeather(strings.TrimPrefix(input, "weather "))
 	} else {
 		givenMode := strings.Split(input, " from ")[0]
 		fmt.Println("givenMode", givenMode)

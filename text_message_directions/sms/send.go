@@ -1,11 +1,11 @@
 package sms
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-	"fmt"
 
 	"github.com/sfreiberg/gotwilio"
 )
@@ -34,7 +34,7 @@ func Send(from string, to string, id string, body string) {
 	messages := SplitLongBody(body)
 	
 	for _, message := range messages {
-		fmt.Println("bob", len(message))
+		fmt.Println("length of message: ", len(message))
 		res, exception, err := cl.SendSMS(from, to, message, "", "")
 		log.Printf("res: %+v, exeption: %+v, err: %+v", res, exception, err)
 		if exception != nil {
@@ -57,7 +57,6 @@ func SplitLongBody(str string) []string {
 			message = message + segment + "\n\n"
 		} else {
 			messages = append(messages, message)
-			// message = segment + "\n\n"
 			message = ""
 		}
 	}
