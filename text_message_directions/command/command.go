@@ -33,9 +33,6 @@ func Do (input string) (string, error) {
 	} else if strings.HasPrefix(input, "weather ") {
 		response, err = weather.GetWeather(strings.TrimPrefix(input, "weather "))
 	} else {
-		givenMode := strings.Split(input, " from ")[0]
-		fmt.Println("givenMode", givenMode)
-
 		response, err = directions.Get(input)
 	}
 

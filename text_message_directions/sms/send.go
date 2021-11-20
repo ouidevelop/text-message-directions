@@ -35,14 +35,14 @@ func Send(from string, to string, id string, body string) {
 	
 	for _, message := range messages {
 		fmt.Println("length of message: ", len(message))
-		res, exception, err := cl.SendSMS(from, to, message, "", "")
-		log.Printf("res: %+v, exeption: %+v, err: %+v", res, exception, err)
+		_, exception, err := cl.SendSMS(from, to, message, "", "")
+		log.Printf("exeption: %+v, err: %+v", exception, err)
 		if exception != nil {
 			errorMessage := "oops! we have an error with code " +
 				strconv.Itoa(int(exception.Code)) +
 				". If you'd like help, please share this code with ouidevelop@gmail.com"
-			res, exception, err = cl.SendSMS(from, to, errorMessage, "", "")
-			log.Printf("res: %+v, exeption: %+v, err: %+v", res, exception, err)
+			_, exception, err = cl.SendSMS(from, to, errorMessage, "", "")
+			log.Printf("exeption: %+v, err: %+v", exception, err)
 		}
 	}
 }
