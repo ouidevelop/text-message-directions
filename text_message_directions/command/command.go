@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ouidevelop/dontfearthesweeper/text_message_directions/command/directions"
 	"github.com/ouidevelop/dontfearthesweeper/text_message_directions/command/places"
 	"github.com/ouidevelop/dontfearthesweeper/text_message_directions/command/weather"
