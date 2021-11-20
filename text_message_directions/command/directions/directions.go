@@ -3,7 +3,6 @@ package directions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"strings"
 
 	"googlemaps.github.io/maps"
-	//"github.com/davecgh/go-spew/spew"
 )
 
 var (
@@ -49,26 +47,26 @@ func Get(m string) (string, error) {
 	m = strings.ToLower(m)
 
 	givenMode := strings.TrimSpace(strings.Split(m, " from ")[0])
-	fmt.Println("split", strings.Split(m, " from "))
-	fmt.Println("givenMode", "&&"+givenMode+"&&")
+	log.Println("split", strings.Split(m, " from "))
+	log.Println("givenMode", "&&"+givenMode+"&&")
 
 	apiMode := maps.TravelModeDriving
 
 	switch givenMode {
 	case "walk", "walk!":
-		fmt.Println("get", 1)
+		log.Println("get", 1)
 		apiMode = maps.TravelModeWalking
 	case "drive", "drive!":
-		fmt.Println("get", 2)
+		log.Println("get", 2)
 		apiMode = maps.TravelModeDriving
 	case "bike", "bike!":
-		fmt.Println("get", 3)
+		log.Println("get", 3)
 		apiMode = maps.TravelModeBicycling
 	case "transit", "transit!":
-		fmt.Println("get", 4)
+		log.Println("get", 4)
 		apiMode = maps.TravelModeTransit
 	default:
-		fmt.Println("get", 5)
+		log.Println("get", 5)
 		return "", ErrMalformed
 	}
 
@@ -115,11 +113,11 @@ func Get(m string) (string, error) {
 
 	for _, route := range resp {
 		legs := route.Legs
-		fmt.Println("num legs: ", len(legs))
+		log.Println("num legs: ", len(legs))
 		for _, leg := range legs {
 			directions += "estimated time: " + leg.Duration.String() + "\n\n"
 			steps := leg.Steps
-			fmt.Println("num steps: ", len(steps))
+			log.Println("num steps: ", len(steps))
 			if len(steps) > 100 {
 				return "Directions for your request have over 100 steps. " +
 					"That usually happens when the provided start or destination are not specific enough and Google guesses two locations that are very far apart. " +
@@ -146,7 +144,7 @@ func Get(m string) (string, error) {
 		}
 	}
 
-	log.Println("directions, error : ", directions, err)
+	log.Println("error: ", err)
 	return directions, err
 }
 
