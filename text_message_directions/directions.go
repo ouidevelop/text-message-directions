@@ -73,8 +73,6 @@ func ReceiveTextsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("problem decoding form", err)
 	}
 
-	log.Printf("incoming message: %+v", message)
-
 	response, err := command.Do(message.Body)
 
 	if err != nil {
