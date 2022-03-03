@@ -1,5 +1,6 @@
 module github.com/ouidevelop/dontfearthesweeper
 
+// +heroku goVersion go1.14
 go 1.14
 
 require (
@@ -10,8 +11,6 @@ require (
 	github.com/gojektech/heimdall v5.0.2+incompatible // indirect
 	github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/gorilla/schema v1.2.0
-	github.com/onsi/ginkgo v1.16.4
-	github.com/onsi/gomega v1.16.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sfreiberg/gotwilio v0.0.0-20200424172909-47a95c1c632a
 	googlemaps.github.io/maps v1.2.2
