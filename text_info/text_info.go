@@ -105,8 +105,10 @@ func formResponse(message message) string {
 		log.Printf("incoming message: %+v", message)
 	}
 
-	u.FreeMessagesUsed = u.FreeMessagesUsed + 1
-	upsertUser(u)
+	if !u.Subscribed {
+		u.FreeMessagesUsed = u.FreeMessagesUsed + 1
+		upsertUser(u)
+	}
 
 	return CommandSwitch(message.Body)
 }
