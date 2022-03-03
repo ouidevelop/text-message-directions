@@ -22,7 +22,7 @@ You have 5 free messages (after this one) before you will need to be subscribed 
 const freeMessagesDone = `You've reached the end of your free messages.
 
 If you want to keep using this service, please contact me (michael) at ouidevelop@gmail.com or (805)423-4224, and we can discuss payment options.
-If you can't pay but still want to use the service send me a message and we may be able to work something out.'`
+If you can't pay but still want to use the service send me a message and we may be able to work something out.`
 
 const freeMessagesLimit = 5
 
@@ -83,7 +83,7 @@ func ReceiveTextsHandler(w http.ResponseWriter, r *http.Request) {
 
 func formResponse(message message) string {
 	// for people using their own twilio number, don't bother them with any of this other stuff
-	if message.To != "+13123131234" && message.From != "+12244847717" {
+	if message.To != "+13123131234" && message.To != "+12244847717" {
 		fmt.Println("outside number", message.To)
 		return CommandSwitch(message.Body)
 	}
