@@ -1,4 +1,4 @@
-package weather
+package text_info
 
 import (
 	"bytes"

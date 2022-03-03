@@ -1,4 +1,4 @@
-package directions
+package text_info
 
 import (
 	"context"
@@ -17,16 +17,15 @@ var (
 	mapsAPIKey string
 )
 
-var ErrMalformed = errors.New("Input malformed.\n\n"+
-	"For directions, please submit in the form '[mode] from [origin] to [destination]'. "+
+var ErrMalformed = errors.New("Input malformed.\n\n" +
+	"For directions, please submit in the form '[mode] from [origin] to [destination]'. " +
 	"For example: 'drive from berkeley to sfo'. " +
-	"Mode can be either 'walk', 'drive', 'bike', or 'transit'.  \n\n"+
+	"Mode can be either 'walk', 'drive', 'bike', or 'transit'.  \n\n" +
 	"You can also get phone number and address info for a business with 'info for [place]'. " +
 	"For example: 'info for UC Berkeley'.\n\n" +
-	"You can get up to 10 nearby places with 'find [type of place] near [specific place]'. " +
-	"For example: 'find grocery near uc berkeley'\n\n"+
+	"You can get up to 5 nearby places with 'find [type of place] near [specific place]'. " +
+	"For example: 'find grocery near uc berkeley'\n\n" +
 	"Lastly, you can get weather info with 'weather for [zip code]'. For example: 'weather for 95555'.")
-
 
 func init() {
 
@@ -42,7 +41,36 @@ func init() {
 	}
 }
 
-func Get(m string) (string, error) {
+func GetPlace(input string) (string, error) {
+	resp, err := mapsClient.TextSearch(context.Background(), &maps.TextSearchRequest{
+		Query: input,
+	})
+
+	info := ""
+
+	for index, result := range resp.Results {
+		placeDetails, err := mapsClient.PlaceDetails(context.Background(), &maps.PlaceDetailsRequest{
+			PlaceID: result.PlaceID,
+		})
+		if err != nil {
+			return "", err
+		}
+
+		info += result.Name + "\n" + placeDetails.FormattedAddress + "\n" + placeDetails.FormattedPhoneNumber + "\n\n"
+
+		if index > 5 {
+			break
+		}
+	}
+
+	if info == "" {
+		info = "couldn't find matching results"
+	}
+
+	return info, err
+}
+
+func GetDirections(m string) (string, error) {
 	log.Println("getting directions for: ", m)
 	m = strings.ToLower(m)
 

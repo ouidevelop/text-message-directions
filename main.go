@@ -10,7 +10,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/ouidevelop/dontfearthesweeper/streetsweeping"
 
-	"github.com/ouidevelop/dontfearthesweeper/text_message_directions"
+	"github.com/ouidevelop/dontfearthesweeper/text_info"
 
 	"github.com/dcu/go-authy"
 	_ "github.com/go-sql-driver/mysql"
@@ -83,19 +83,19 @@ func main() {
 	http.HandleFunc("/alerts/stop", env.StopAlertHandler)
 
 	// text message directions
-	http.HandleFunc("/sms", text_message_directions.ReceiveTextsHandler)
+	http.HandleFunc("/sms", text_info.ReceiveTextsHandler)
 
 	paths := os.Getenv("PATHS")
 	if paths == "" {
 		panic("PATHS env variable not set")
 	}
 	pathsSlice := strings.Split(paths, ",")
-	
+
 	for _, path := range pathsSlice {
 		fmt.Println("path: ", path)
-		http.HandleFunc("/"+path+"/sms", text_message_directions.ReceiveTextsHandler)
+		http.HandleFunc("/"+path+"/sms", text_info.ReceiveTextsHandler)
 	}
-	http.HandleFunc("/directions", text_message_directions.DirectionsHandler) //for demo purposes
+	http.HandleFunc("/directions", text_info.DirectionsHandler) //for demo purposes
 
 	log.Println("Magic happening on port " + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

@@ -1,4 +1,4 @@
-package sms
+package text_info
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ var (
 	twilioAuths = make(map[string]string)
 )
 
-func init(){
+func init() {
 	envVars := os.Environ()
 	for _, envVar := range envVars {
 		parts := strings.Split(envVar, "=")
@@ -32,7 +32,7 @@ func Send(from string, to string, id string, body string) {
 	cl := gotwilio.NewTwilioClient(id, twilioAuths[id])
 
 	messages := SplitLongBody(body)
-	
+
 	for _, message := range messages {
 		fmt.Println("length of message: ", len(message))
 		_, exception, err := cl.SendSMS(from, to, message, "", "")
@@ -53,14 +53,14 @@ func SplitLongBody(str string) []string {
 
 	message := ""
 	for _, segment := range segments {
-		if len(message + segment + "\n\n") < 1550 {
+		if len(message+segment+"\n\n") < 1550 {
 			message = message + segment + "\n\n"
 		} else {
 			messages = append(messages, message)
 			message = ""
 		}
 	}
-	
+
 	if message != "" {
 		messages = append(messages, message)
 	}
