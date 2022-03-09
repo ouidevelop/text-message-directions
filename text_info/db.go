@@ -21,6 +21,24 @@ func init() {
 		panic(err)
 	}
 	rdb = redis.NewClient(opt)
+
+	//updateSchema()
+}
+
+// just gets each user and then upsert's the user. practically speaking it adds json fields that aren't there yet.
+func updateSchema() {
+	keys, err := rdb.Keys(ctx, "*").Result()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, key := range keys {
+		user, err := getUser(key)
+		if err != nil {
+			panic(err)
+		}
+		upsertUser(user)
+	}
 }
 
 type User struct {
@@ -29,6 +47,7 @@ type User struct {
 	Private            bool   `json:"private"`
 	Subscribed         bool   `json:"subscribed"`
 	SubscriptionAmount int    `json:"subscriptionAmount"`
+	PaidMessages       int    `json:"paidMessages"`
 }
 
 func getUser(phoneNumber string) (*User, error) {

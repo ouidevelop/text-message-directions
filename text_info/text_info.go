@@ -93,24 +93,36 @@ func formResponse(message message) string {
 		addNewUser(message.From)
 		return newUserMessage
 	}
+
 	if err != nil {
 		log.Println("error checking to see if we need to send initial Message: ", err)
 		return "there's been a problem on our end. sorry"
-	}
-	if u.FreeMessagesUsed >= freeMessagesLimit && !u.Subscribed {
-		return freeMessagesDone
 	}
 
 	if !u.Private {
 		log.Printf("incoming message: %+v", message)
 	}
 
-	if !u.Subscribed {
-		u.FreeMessagesUsed = u.FreeMessagesUsed + 1
-		upsertUser(u)
+	messagesLeft := (5 - u.FreeMessagesUsed) + u.PaidMessages
+
+	if !u.Subscribed && messagesLeft <= 0 {
+		return freeMessagesDone
 	}
 
-	return CommandSwitch(message.Body)
+	response := CommandSwitch(message.Body)
+
+	if !u.Subscribed {
+		if u.FreeMessagesUsed < 5 {
+			u.FreeMessagesUsed = u.FreeMessagesUsed + 1
+		} else if u.PaidMessages > 0 {
+			u.PaidMessages = u.PaidMessages - 1
+		}
+		upsertUser(u)
+		messagesLeft := (5 - u.FreeMessagesUsed) + u.PaidMessages
+		response = response + fmt.Sprintf("\n\n %v msgs left", messagesLeft)
+	}
+
+	return response
 }
 
 func CommandSwitch(input string) string {

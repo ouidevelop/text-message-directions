@@ -67,6 +67,8 @@ func GetPlace(input string) (string, error) {
 		info = "couldn't find matching results"
 	}
 
+	info = strings.TrimSuffix(info, "\n\n")
+
 	return info, err
 }
 
