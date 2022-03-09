@@ -103,7 +103,7 @@ func formResponse(message message) string {
 		log.Printf("incoming message: %+v", message)
 	}
 
-	messagesLeft := (5 - u.FreeMessagesUsed) + u.PaidMessages
+	messagesLeft := (freeMessagesLimit - u.FreeMessagesUsed) + u.PaidMessages
 
 	if !u.Subscribed && messagesLeft <= 0 {
 		return freeMessagesDone
@@ -112,13 +112,13 @@ func formResponse(message message) string {
 	response := CommandSwitch(message.Body)
 
 	if !u.Subscribed {
-		if u.FreeMessagesUsed < 5 {
+		if u.FreeMessagesUsed < freeMessagesLimit {
 			u.FreeMessagesUsed = u.FreeMessagesUsed + 1
 		} else if u.PaidMessages > 0 {
 			u.PaidMessages = u.PaidMessages - 1
 		}
 		upsertUser(u)
-		messagesLeft := (5 - u.FreeMessagesUsed) + u.PaidMessages
+		messagesLeft := (freeMessagesLimit - u.FreeMessagesUsed) + u.PaidMessages
 		response = response + fmt.Sprintf("\n\n %v msgs left", messagesLeft)
 	}
 
