@@ -35,13 +35,10 @@ For example:
 
 # Payment 
 
-This project costs money every time it sends or receives a text message. I use a "pay what you want" model to cover costs. If you want to use the service, you have 4 options:
-1. Sign up for monthly donations on paypal (I think the minimum is 1 dollar per month).  
+This project costs me about 10 cents per message (on average). As I'm not trying to make a profit, that is what I charge. Here's how to get set up:
+1. Buy as many messages as you want. 100 messages would be 10$, 50 would be 5$ etc.
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YLQFA7GD6GZYG&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
-2. Sign up for payments on patreon: https://www.patreon.com/ouidevelop
-3. If you'd like to pay but can't with those two methods for some reason, email me at ouidevelop@gmail.com.
-4. If you can't pay feel free to shoot me an email at ouidevelop@gmail.com. I may be able to let you use the thing for free. No promises though.
+2. Send me an email at ouidevelop@gmail.com telling me your phone number and how much you paid and I'll add your messages to your number.
 
-When you sign up for a payment, send me a message with your phone number so I can add you to the whitelist.
 
 Built by Oui Develop (at http://ouidevelop.com)
