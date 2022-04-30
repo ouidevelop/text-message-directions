@@ -42,7 +42,7 @@ func GetWeather(zip string) (string, error) {
 
 	if resp.StatusCode != 200 {
 		fmt.Println("non 200 status: ", resp.StatusCode)
-		return "", errors.New("error looking up your location. currently we only accept US and Canadian zip codes for weather look ups. Something like 'Weather for 95555'")
+		return "", errors.New("error looking up your location. currently we only accept US and Canadian zip codes for weather look ups. Something like 'Weather 95555'")
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)

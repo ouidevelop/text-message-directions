@@ -1,6 +1,7 @@
 package text_info
 
 import (
+	"errors"
 	"log"
 	"strings"
 
@@ -13,16 +14,23 @@ import (
 
 const newUserMessage = `Due to a large increase in usage, and therefore cost, I'll unfortunately have to start charging for this service.
 
-If you want to keep using this service, please contact me (michael) at ouidevelop@gmail.com or (805)423-4224, and we can discuss payment options.
-If you can't pay but still want to use the service send me a message and we may be able to work something out.
-If you're already donating monthly, thanks! Send me a message and I'll make sure you can continue to use the service.
+To learn more about how to pay, text "pay". It's 10 cents per message.
 
 You have 5 free messages (after this one) before you will need to be subscribed to continue. (feel free to retry your request)`
 
-const freeMessagesDone = `You've reached the end of your free messages.
+const freeMessagesDone = `You've reached the end of your free messages. Unfortunately I can't support unlimited free use of this service at this time, but may be able to in the future. 
 
-If you want to keep using this service, please contact me (michael) at ouidevelop@gmail.com or (805)423-4224, and we can discuss payment options.
-If you can't pay but still want to use the service send me a message and we may be able to work something out.`
+This thing costs me on average 10 cents per message. As I'm not trying to make a profit, that is what I am charging.
+
+To learn more about how to pay, text "pay"`
+
+const paymentMessage = `This thing costs me on average 10 cents per message. As I'm not trying to make a profit, that is what I am charging.You would pay for messages ahead of time. So for example 100 messages would be 10$. 
+
+If you can't access the internet, I can take a credit card payment over the phone at (805) 423 4224.
+
+If you can access the internet, you can pay here: https://github.com/ouidevelop/text-message-directions
+
+There is a paypal button at the bottom of the page. There you can pay with either paypal or a credit card. Once you've paid, let me know and I'll add the messages to your number.`
 
 const freeMessagesLimit = 5
 
@@ -45,7 +53,10 @@ func DirectionsHandler(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprint(w, "problem decoding json", err)
 		return
 	}
-	commandResponse := CommandSwitch(q.Query)
+	commandResponse, err := CommandSwitch(q.Query)
+	if err != nil {
+		commandResponse = err.Error()
+	}
 
 	var messages []string
 
@@ -85,7 +96,11 @@ func formResponse(message message) string {
 	// for people using their own twilio number, don't bother them with any of this other stuff
 	if message.To != "+13123131234" && message.To != "+12244847717" {
 		fmt.Println("outside number", message.To)
-		return CommandSwitch(message.Body)
+		resp, err := CommandSwitch(message.Body)
+		if err != nil {
+			resp = err.Error()
+		}
+		return resp
 	}
 
 	u, err := getUser(message.From)
@@ -104,13 +119,23 @@ func formResponse(message message) string {
 	}
 
 	messagesLeft := (freeMessagesLimit - u.FreeMessagesUsed) + u.PaidMessages
+	input := strings.ToLower(message.Body)
 
-	if !u.Subscribed && messagesLeft <= 0 {
+	if !u.Subscribed && messagesLeft <= 0 && !strings.HasPrefix(input, "pay") {
 		return freeMessagesDone
 	}
 
-	response := CommandSwitch(message.Body)
+	response, err := CommandSwitch(input)
+	if err != nil {
+		return err.Error()
+	}
 
+	response = updateDB(u, response)
+
+	return response
+}
+
+func updateDB(u *User, response string) string {
 	if !u.Subscribed {
 		if u.FreeMessagesUsed < freeMessagesLimit {
 			u.FreeMessagesUsed = u.FreeMessagesUsed + 1
@@ -121,29 +146,41 @@ func formResponse(message message) string {
 		messagesLeft := (freeMessagesLimit - u.FreeMessagesUsed) + u.PaidMessages
 		response = response + fmt.Sprintf("\n\n %v msgs left", messagesLeft)
 	}
-
 	return response
 }
 
-func CommandSwitch(input string) string {
-
-	input = strings.ToLower(input)
+func CommandSwitch(input string) (string, error) {
 
 	var err error
 	var response string
 
-	if strings.HasPrefix(input, "info for ") {
+	if strings.HasPrefix(input, "pay") {
+		return "", errors.New(paymentMessage) // dumb hack to make payment info not count towards message count
+	} else if strings.HasPrefix(input, "define ") {
+		parts := strings.Split(input, " ")
+		if len(parts) != 2 {
+			return "", errors.New("command should be of the form 'define car'")
+		}
+		response, err = getDefinition(parts[1])
+		if err != nil {
+			log.Println("error getting definition: ", err)
+			return "", errors.New("error getting definition")
+		}
+	} else if strings.HasPrefix(input, "info ") {
+		if !strings.HasPrefix(input, "info for ") {
+			input = strings.Replace(input, "info ", "info for ", 1)
+		}
 		response, err = GetPlace(input)
 	} else if strings.HasPrefix(input, "[") {
 		input2 := strings.ReplaceAll(input, "[", "")
 		input3 := strings.ReplaceAll(input2, "]", "")
-		return "input problem, try removing the brackets like this: '" + input3 + "'"
+		return "", errors.New("input problem, try removing the brackets like this: '" + input3 + "'")
 	} else if strings.HasPrefix(input, "find ") && strings.Contains(input, " near ") {
 		response, err = GetPlace(input)
 	} else if strings.HasPrefix(input, "weather for ") {
 		parts := strings.Fields(input)
 		if (len(parts) != 3) && (len(parts) != 4) {
-			return "command should be in form 'weather for [zip]' (works in USA and Canada)"
+			return "", errors.New("command should be in form 'weather [zip]' (works in USA and Canada)")
 		}
 		response, err = GetWeather(strings.TrimPrefix(input, "weather for "))
 	} else if strings.HasPrefix(input, "weather ") {
@@ -152,8 +189,6 @@ func CommandSwitch(input string) string {
 		response, err = GetDirections(input)
 	}
 
-	if err != nil {
-		return err.Error()
-	}
-	return response
+	response = strings.TrimSuffix(response, "\n\n")
+	return response, err
 }
