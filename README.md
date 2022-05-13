@@ -47,4 +47,9 @@ This project costs me about 10 cents per message (on average). As I'm not trying
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YLQFA7GD6GZYG&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
 2. Send me an email at ouidevelop@gmail.com telling me your phone number and how much you paid and I'll add your messages to your number.
 
+# Cost breakdown
+I use twilio for the messaging. They charge .75 per segment (which I believe is 160 characters or so). On average, requests have enough segments to cost me about 4 cents. That includes both the incoming message and outgoing message.
+
+The business information and directions come from google api's which also charge. In my last month of providing this for free, that cost was about the same as the messaging fees. So together that's up to about 8 cents per request. And then there's paying for the server and two phone numbers (one for production and one for testing).
+
 Built by Oui Develop (at http://ouidevelop.com)
