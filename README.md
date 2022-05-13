@@ -48,7 +48,7 @@ This project costs me about 10 cents per message (on average). As I'm not trying
 2. Send me an email at ouidevelop@gmail.com telling me your phone number and how much you paid and I'll add your messages to your number.
 
 # Cost breakdown
-I use twilio for the messaging. They charge .75 per segment (which I believe is 160 characters or so). On average, requests have enough segments to cost me about 4 cents. That includes both the incoming message and outgoing message.
+I use twilio for the messaging. They charge .75 cents per segment (which I believe is 160 characters or so). On average, requests have enough segments to cost me about 4 cents. That includes both the incoming message and outgoing message.
 
 The business information and directions come from google api's which also charge. In my last month of providing this for free, that cost was about the same as the messaging fees. So together that's up to about 8 cents per request. And then there's paying for the server and two phone numbers (one for production and one for testing).
 
