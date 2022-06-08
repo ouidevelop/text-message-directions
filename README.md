@@ -43,7 +43,7 @@ For example:
 # Payment 
 
 This project costs me about 10 cents per message (on average). As I'm not trying to make a profit, that is what I charge. Here's how to get set up:
-1. Buy as many messages as you want. 100 messages would be 10$, 50 would be 5$ etc.
+1. Buy as many messages as you want. 100 messages would be 10 dollars, 50 would be 5 dollars etc.
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YLQFA7GD6GZYG&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
 2. Send me an email at ouidevelop@gmail.com telling me your phone number and how much you paid and I'll add your messages to your number.
 
