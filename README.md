@@ -52,4 +52,4 @@ I use twilio for the messaging. They charge .75 cents per segment (which I belie
 
 The business information and directions come from google api's which also charge. In my last month of providing this for free, that cost was about the same as the messaging fees. So together that's up to about 8 cents per request. And then there's paying for the server and two phone numbers (one for production and one for testing).
 
-Built by Oui Develop (at http://ouidevelop.com)
+Built by Oui Develop (at http://ouidevelop.org)
