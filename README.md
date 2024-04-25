@@ -54,7 +54,7 @@ And then there's paying for the server and two phone numbers (one for production
 # Payment
 This project costs me about 10 cents per message (on average). As I'm not trying to make a profit, that is what I charge. Here's how to get set up:
 1. Buy as many messages as you want (you can adjust the quantity in the link). 100 messages would be 10 dollars, 50 would be 5 dollars etc.
-   [pay now](https://buy.stripe.com/4gwbLO8j6dA4g24fZ0).
+   [PAY HERE](https://buy.stripe.com/4gwbLO8j6dA4g24fZ0)
 2. This will save your credit card information so that when you run out of messages, you will be given the option to buy more from your phone.
 3. If you have questions about payment, or would like to pay over the phone, please call or text support at (805) 423-4224.
 
