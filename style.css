@@ -49,7 +49,16 @@ dfn {
 
 h1 {
     font-size: 2em;
+    font-weight: bold; /* Bolder text */
     margin: 0.67em 0
+}
+
+h2 {
+    font-weight: bold; /* Bolder text */
+}
+
+h3 {
+    font-weight: normal;
 }
 
 mark {
@@ -670,7 +679,7 @@ a:hover {
 .main-content h1,.main-content h2,.main-content h3,.main-content h4,.main-content h5,.main-content h6 {
     margin-top: 2rem;
     margin-bottom: 1rem;
-    font-weight: normal;
+    /*font-weight: normal;*/
     color: #159957
 }
 
@@ -836,4 +845,28 @@ a:hover {
 
 .site-footer-credits {
     color: #819198
+}
+
+.pay-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    background-color: #159957;
+    background-image: linear-gradient(120deg, #155799, #159957);
+    border: none;
+    border-radius: 0.3rem;
+    font-size: 1.25rem; /* Increased font size */
+    font-weight: bold; /* Bolder text */
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.pay-button:hover {
+    background-color: #157a3b;
+    background-image: linear-gradient(120deg, #135a76, #157a3b);
+    text-decoration: none;
+    color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
