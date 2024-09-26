@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Text File Search with Tags</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--  <link rel="stylesheet" href="style.css">-->
+  <style>
+    /* Base Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Introductory Section Styles */
+    #intro {
+      margin: 20px auto;          /* Center the intro section */
+      padding: 20px;              /* Add padding for inner spacing */
+      max-width: 1200px;          /* Limit the maximum width */
+      box-sizing: border-box;     /* Include padding within the width */
+    }
+
+    /* Search Container Styles */
+    .search-container {
+      margin: 20px auto;          /* Center the container horizontally */
+      max-width: 1200px;          /* Match the width of #intro and .content-container */
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-sizing: border-box;     /* Include padding within the max-width */
+      padding: 0 20px;            /* Optional: Add horizontal padding for better spacing */
+    }
+
+    #search {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    /* Category and Tag Dropdown Styles */
+    #categoryDropdown,
+    #tagDropdown {
+      padding: 10px;
+      font-size: 1em;
+    }
+
+    /* Suggestions Styles */
+    .suggestions {
+      border: 1px solid #ccc;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 5px;
+      width: 100%;
+    }
+
+    .suggestion {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .suggestion:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Highlight Styles */
+    .highlight {
+      background-color: yellow;
+      font-weight: bold;
+    }
+
+    .tag-highlight {
+      background-color: lightgreen;
+      font-weight: bold;
+    }
+
+    /* Content Container */
+    .content-container {
+      margin: 20px auto;          /* Center the container */
+      padding: 20px;              /* Add padding for inner spacing */
+      max-width: 1200px;          /* Limit the maximum width */
+      box-sizing: border-box;     /* Include padding within the width */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* File Content Container */
+    .file-content {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .file-content:nth-child(odd) {
+      background-color: #f0f0f0;
+    }
+
+    /* Post Content within File */
+    .post-content {
+      margin-bottom: 20px;
+    }
+
+    .post-heading {
+      font-size: 1.2em;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    /* Optional separator between posts within the same file */
+    .post-content + .post-content {
+      border-top: 1px dashed #ccc;
+      padding-top: 15px;
+    }
+
+    /* File Name */
+    .file-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+      font-size: 1.2em;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .permalink {
+      font-size: 0.9em;
+      margin-left: 10px;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 600px) {
+      .search-container {
+        margin: 10px;
+        flex-direction: column;
+      }
+
+      #search,
+      #categoryDropdown,
+      #tagDropdown {
+        font-size: 1.2em;
+        padding: 12px;
+        width: 100%;
+      }
+
+      .suggestions {
+        max-height: 200px;
+        font-size: 1.1em;
+      }
+
+      .suggestion {
+        padding: 15px;
+      }
+
+      .file-name {
+        font-size: 1.4em;
+      }
+
+      .file-content {
+        padding: 10px;
+      }
+
+      .file-content p {
+        font-size: 1.1em;
+      }
+
+      body {
+        font-size: 16px;
+      }
+
+      /* Ensure Introductory Content is Responsive */
+      #intro p {
+        font-size: 1.1em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Introductory Content -->
+<div id="intro" class="intro">
+  <h1>r/nosurf Success Posts</h1>
+  <p>Welcome to the collection of success stories from r/nosurf up until the end of 2023. To be featured, contributors must have significantly reduced their screen time for at least a month.</p>
+  <p>If you'd like to submit a new post, request the removal of an existing one (if you're the owner), or have any other feedback or questions, please contact Michael at <a href="mailto:mjkurrels@gmail.com">mjkurrels@gmail.com</a>.</p>
+</div>
+
+<!-- Search Container -->
+<div class="search-container">
+  <input type="text" id="search" placeholder="Search for text..." onkeyup="performSearch()" />
+
+  <!-- Category Dropdown -->
+  <select id="categoryDropdown" onchange="filterTagsAndHighlight()">
+    <option value="">Select Tag Category</option>
+    <!-- Options will be populated by JavaScript -->
+  </select>
+
+  <!-- Tag Dropdown -->
+  <select id="tagDropdown" onchange="performSearch()">
+    <option value="">Select Tag</option>
+    <!-- Options will be populated by JavaScript -->
+  </select>
+
+  <div id="suggestions" class="suggestions"></div>
+</div>
+
+<!-- Dynamic Content Container -->
+<div id="content-container" class="content-container"></div>
+
+<!-- Include Marked.js -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- Your existing JavaScript -->
+<script>
+  // Define Categories with Mappings for Abbreviations
+  const categoryMappings = {
+    "a-t": "addicted to",
+    "bad": "negatives of quitting",
+    "ben": "positives of quitting",
+    "symp": "symptoms",
+    "tech": "techniques",
+    "book": "book",
+    "other-activities": "other activities",
+    "right-mind": "right mind",
+    "withdrawal": "withdrawal"
+  };
+
+  // Extracted Categories Array from Mappings
+  const categories = Object.keys(categoryMappings);
+
+  const fileNames = [
+    "(1)-r_r-46ifci-how_i_nosurf_a_post_detailing_my_experiences_in-",
+    "(1)303ALc6lg48-one_month_of_no_internet-",
+    "(1)Amandy64b08ayq-no_internet_at_home_for_7_weeks_some_thoughts-",
+    "(1)Archr_556a7tdrs-stumbled_across_this_sub_thought_id_share_my-",
+    "(1)BigChungusPS5mw43is-the_method_that_worked_for_me_15_months_reddit-",
+    "(1)Bisounoursworld6x5yx8-some_personal_advices_how_i_stopped_using_the-",
+    "(1)Botanical-pimpiy5wag-my_experience_with_a_dumb_phone-",
+    "(1)Canuck_Fapstronautk5h71k-90_days_off_fb_and_ig_observations-",
+    "(1)ColdEarth7b8mjjg-1_month_social_media_free-",
+    "(1)Cresspitsu1494-i_fucking_did_it_6_months_clean_after_12_years_of-",
+    "(1)CuthbertAndEphraimenkwrt-cutting_out_the_smartphone_and_social_media-",
+    "(1)Devils-Advocacy42514iz02y-i_reduced_my_screen_time_from_10_hrs_to_1_hr_per-",
+    "(1)DioRemTWru8snn-i_left_all_social_media_back_in_may_and_i_dont-",
+    "(1)DivingPanda689m8dzyy-what_helped_me_an_ereader_and_an_mp3_player-",
+    "(1)DrAculaismyfatherl34yci-i_quit_instagram_6_months_ago_and_it_was_the_best-",
+    "(1)Druidite4g9avi-spent_1_year_without_the_internet_at_home_just-",
+    "(1)Fapplemage4mp2ei-made_it_to_about_100_days_returned_to_moderated-",
+    "(1)Hananhanbrb2uu-ironically_a_whole_lot_more_tech_cured_my-",
+    "(1)Its_A_Nice_Dayadxtkl-on_my_32nd_day_of_almost_no_internet_or_phone-",
+    "(1)Jace-parkymkfd5-1_month_with_a_dumbphone-",
+    "(1)JelloOwn9045sg2jnu-i_was_a_hopeless_internet_addict_and_im_finally-",
+    "(1)JensMadsen88yf5w-inspiration_my_journey_to_a_sensible_phone_more-",
+    "(1)Kloumbdczo8z-its_been_a_month_since_i_quit_instagram_and_it-",
+    "(1)Leadsynthesizerri2kt1-my_30_days_of_no_home_internet-",
+    "(1)Liza8816zya8k-i_got_free_heres_how-",
+    "(1)Massive_Ad_8133wi0vnq-how_i_always_find_an_alternative_how_i_succeeded-",
+    "(1)MediocreCommoncz6pp3-i_blocked_all_unproductive_sites_for_a_month-",
+    "(1)Muccolottopn5fb7-1_year_no_social_media_no_surfing_no_smartphone-",
+    "(1)Nakazanyynzpvh9-i_feel_free_five_months_since_my_decision-",
+    "(1)Net-Ad5772108npc7-how_ive_stayed_off_social_media_for_over_a_year-",
+    "(1)No_Sorbet_9440wnn5wn-update_on_no_smartphone_life-",
+    "(1)NotRealHydej6wk7i-from_8_to_0_hours_and_why_you_can_do_it_too-",
+    "(1)Novibesmatter188vrq9-i_went_6_months_without_a_cellphone-",
+    "(1)Nyx1102jr0mgr-this_is_how_i_got_better-",
+    "(1)Omegabeamer8da14z-removing_my_computer_from_my_room_has_done-",
+    "(1)Own-Consequence64zyilei-2022_nosurf_success-",
+    "(1)Past-Geologistertwz6-2_years_of_nosurf_my_timeline_and_experience-",
+    "(1)PretendDinnerbup614-how_i_quit_my_addiction_to_the_internet-",
+    "(1)Private_Problemnf78vq-happier_with_more_time_and_higher_productivity_my-",
+    "(1)ProgressTakenvbes8h-a_small_update_5_months_of_consumption_reduction-",
+    "(1)PsMoeLesterx32avn-after_struggling_a_lot_with_gaming_i_quit_for_6-",
+    "(1)Ramirez1229242ir-im_finally_clean_its_really_worth_it_guys-",
+    "(1)RevolutionMiddle2431wi77v7-i_reduced_my_screen_time_from_16_hours_to_1h30m-",
+    "(1)Ridfleabzig0t-my_nosurf_digital_declutter-",
+    "(1)Semen_Surprisep1rcc1-after_15_years_of_internet_addiction_i_quit-",
+    "(1)SeriousRuin9176vxtxig-what_finally_worked_for_my_very_debilitating-",
+    "(1)Shakalyabashka188ys0n-1_month_off_youtube_addiction-",
+    "(1)SommarFrossa5oatag-how_i_got_off_the_internet_my_success_story-",
+    "(1)SonnyXDyeylvr-how_internet_and_technology_detox_changed_my_life-",
+    "(1)TastyRancidLemons94asqr-cleaning_up_my_subreddit_and_youtube-",
+    "(1)TexanLoneStaruikl1w-i_gave_up_the_internet_except_for_bank_email_etc-",
+    "(1)Throwethawayeth7264817roxtj-social_media_free_for_3_years-",
+    "(1)Toppi_The_Topic6aca4l-just_unwillingly_went_35_days_with_no_internet-",
+    "(1)TrashAccount18456231q1ddb6-i_have_been_off_social_networks_for_16_months_and-",
+    "(1)VisitmeinWhiterunuvhsdx-lived_without_social_media_for_over_a_year-",
+    "(1)Wise-Bikeewzkog-my_experience_with_nosurf-",
+    "(1)[deleted]108pkxbu-motivation_for_you_im_a_30_year_old_whos_finally-",
+    "(1)[deleted]1190zv2k-my_indepth_journey_some_resources_and_possible-",
+    "(1)[deleted]11qw0cs-partial_success-",
+    "(1)[deleted]16be9x20-success_story_been_addicted_for_13_years-",
+    "(1)[deleted]25e0vdhs-i_have_spent_the_last_39_days_with_a_15_dumphone-",
+    "(1)[deleted]28fj1oor-2_months_free_without_reddit_and_how_to_cut_back-",
+    "(1)[deleted]31gpagon-deleted_my_instagram_and_snapchat_accounts_and_i-",
+    "(1)[deleted]33gt1gco-i_quit_reddit_a_month_ago_and_it_has_helped_me-",
+    "(1)[deleted]369yfoq-how_i_substantially_got_rid_of_most_internet-",
+    "(1)[deleted]42je1lmp-90_days_of_quitting_social_media-",
+    "(1)[deleted]46nor8j-success_with_nosurf-",
+    "(1)[deleted]47kbo4r0-2_months_away_from_everythingthoughts-",
+    "(1)[deleted]49l0s6q3-me_and_my_boyfriend_have_both_been_nosurf_for_2-",
+    "(1)[deleted]50l3rv3m-no_social_media_for_nearly_2_years-",
+    "(1)[deleted]52lbejm1-i_achieved_first_30_days_no_smartphone-",
+    "(1)[deleted]53lc40uq-no_fb_and_insta_one_month_on_theres_hope-",
+    "(1)[deleted]61nsef0b-i_did_no_social_media_for_a_year_heres_what_i-",
+    "(1)[deleted]65ounmc7-what_finally_worked_for_me-",
+    "(1)[deleted]66ph1tns-i_quit_six_months_ago-",
+    "(1)[deleted]73rf1n2a-how_i_successfully_stopped_wasting_my_life_online-",
+    "(1)[deleted]76t771rg-nosurf_journey_reflection_after_two_months-",
+    "(1)[deleted]79tphvkf-50_days_of_using_dumb_phone-",
+    "(1)[deleted]84wsekht-tips_from_a_nosurf_veteran-",
+    "(1)[deleted]86x58y32-been_off_social_media_for_a_month_never_felt_so-",
+    "(1)_Electric_Jesus87cxoq-i_quit_all_social_media_for_50_days_and_had_my-",
+    "(1)_virtuoso5911s8-ditching_the_smartphone_a_nosurf_success_story-",
+    "(1)anthymnx80fpw0-my_history_and_progress_with_internet_use-",
+    "(1)bellapippin9v0fwm-how_my_apple_watch_series_3_has_helped_me_stay-",
+    "(1)bigjoeronarfsdml-how_deleting_social_media_made_me_more_disciplined-",
+    "(1)blonbedqmzl5v-from_a_17yearold_who_left_social_media-",
+    "(1)briaairbpy1cd6-2_months_no_social_media_if_you_havent_deleted-",
+    "(1)burnoutclank9fjlp1-why_quitting_the_internet_for_about_25_years_was-",
+    "(1)cantrel8tegirbzb-was_off_of_social_media_for_two_months-",
+    "(1)cecentrern9vyh-going_from_12_hours_of_screen_time_a_day_to_2_3-",
+    "(1)changeyourlife217gsi95w-if_youve_been_coming_to_this_subreddit_looking-",
+    "(1)chuktidderk6uqlk-i_dont_have_internet_in_my_house_this_is_what_i-",
+    "(1)cranberrylime9z6fzd-what_i_missed_and_didnt_miss_when_i_took_a_month-",
+    "(1)cyberslut_96creisa-focus_is_a_muscle_my_nosurf_journey-",
+    "(1)cyborgdreamsjr7stk-week_6_my_anxiety_is_way_down-",
+    "(1)dependent_structurehewg4i-i_stayed_away_from_youtube_instagram_and_reddit-",
+    "(1)egakimasuxxhvlu-having_a_flip_phone_changed_my_life_for_good-",
+    "(1)existential_ughery6t2tpi-how_i_reduced_my_internet_use-",
+    "(1)february_friday100kg0o-success-",
+    "(1)feligatora1qyq3-yes_its_true_getting_addictionfree_changes_your-",
+    "(1)fluffyguffyhfjaf6-ive_only_just_discovered_this_sub_but_ive_been-",
+    "(1)gojournalingagqr40-what_living_without_internet_taught_me-",
+    "(1)goomba10095foy2-one_month_down_on_wednesday-",
+    "(1)greyrocks15nndla-my_gpa_went_from_29_37_after_i_quit_the_internet-",
+    "(1)humbowlspiritualqaof64-16_months_after_deleting_social_media-",
+    "(1)igeleis8q179l-in_defense_of_the_hard_approach_cold_turkey-",
+    "(1)ihatetheinternet4373ts21x5-several_months_of_minimal_social_internet_use_its-",
+    "(1)indignanfxehpp-life_is_actually_getting_better-",
+    "(1)infinitekaizenlf6zs6-deleted_all_sm_now_i_feel_free-",
+    "(1)joythegreat96jcbpqb-not_log_into_facebook_for_more_than_3_months_now-",
+    "(1)kiwichamomileiohyqg-i_did_it-",
+    "(1)l3wd1a9bfdhj-8_months_social_media_free_for_the_most_part-",
+    "(1)leethecowboybwhczz-update_3_months_with_the_dumbphone-",
+    "(1)m_chutchx254wi-i_lost_my_phone_a_couple_of_months_ago_and_just-",
+    "(1)nicegraphduded6z6pk-my_first_4_weeks-",
+    "(1)normificatorj1o0yg-how_i_cured_my_social_media_addiction-",
+    "(1)primahaneyjb8ero-1_month_of_no_social_media-",
+    "(1)puggidy7dzv9x-my_solution_to_cutting_screen_time_been_doing-",
+    "(1)randomguy33669986szvc-what_i_gained_what_i_did-",
+    "(1)restartyourlifebfst1v-as_a_person_with_15_years_of_sustained_tech-",
+    "(1)revenreven333swkn6q-something_ive_learned_after_a_year_without_a-",
+    "(1)rude_girl_nd0glv-im_living_in_real_life_now_and_its_better-",
+    "(1)slugsareourfriends7fe81q-99_days_of_freedom_update-",
+    "(1)srakeebbrkaff-i_decided_to_quit_social_media_for_a_year_ive-",
+    "(1)starpoet4r5i33-how_ive_made_significant_progress_beating-",
+    "(1)stdin_stdout_stderr7ypy6b-the_11_blackberry_that_changed_my_life_success-",
+    "(1)stinkyfernb4n8ft-15_months_wo_reddit_and_with_a_feature_phone-",
+    "(1)t0sterCatg7x1k0-no_social_media_for_100_days_i_did_it-",
+    "(1)talkshitaboutsunsetss1tm3t-how_i_hacked_reddit_and_youtube_and_took_back_my-",
+    "(1)viaviaconme98o2mr6m-im_feeling_so_happy_im_slowly_over_my_social-",
+    "(1)vvoecdgwson-my_experience_in_not_using_social_media_and_not-",
+    "(1)whop119ra2eb-heres_how_i_limit_my_usage_grandpa_style-",
+    "(1)xbramblestafnjb-social_media_free_for_4_months_now-",
+    "(2)420Zonk84n1dc-ive_gone_halfdumbphone-",
+    "(2)5points6w0ucw-rnosurf_sunday_will_be_my_first_month_with_no-",
+    "(2)InternetAddict42cg1lpx-what_works_for_me-",
+    "(2)Kazekage1111e88j9w-kazekages_30_day_digital_declutter-",
+    "(2)Klutzy-Reward-201314pm83b-my_experience_with_no_smartphone_for_almost_a-",
+    "(2)MRaspb3rryypn377-my_story_how_time_tracking_helped_me_to_be-",
+    "(2)Nick_Charmajylfp6-these_are_the_benefits_i_have_experienced_thus-",
+    "(2)Username_Bondlvwvdz-deleted_most_of_social_media_and_now_it_feels-",
+    "(2)apakistaniabroadfk8wqx-i_finally_broke_my_phone_addiction_in_seven_days-",
+    "(2)caseytimes7317lm-killing_home_internet_is_the_most_productive-",
+    "(2)digitallyminimallymq4wjr-from_a_smartphone_to_a_flip_phone-",
+    "(2)hotcocoa300ig5rb1-how_i_lowered_my_social_mediaphone_addiction-",
+    "(2)lionkingers11eb21n-i_didnt_have_my_smartphone_for_45_days-",
+    "(2)nervousyounghumans8g9d7a-my_rnosurf_journey_and_a_lesson_i_learned_in-",
+    "(2)niki_2196vx954c-this_is_how_i_went_from_9_hours_of_screen_time_to-",
+    "(2)sommarfinwfimto-one_month_without_youtube-",
+    "(3)Alea-IactaEsttzokx8-im_at_day_30-",
+    "(3)DeadFetusConsumerkpsana-i_got_rid_of_my_cellphone_from_1722_the_results-",
+    "(3)Littleslapandpickle7llyv3-i_completed_a_30_day_no_internet_challenge_and_it-",
+    "(3)Spontaneouslyaveragethg0y5-nosurf_3_months_facebook_sober_my_path_to_self-",
+    "(3)bikramxo7utg6y-life_is_so_much_better_without_social_media-",
+    "(3)cikatomo4iprh5-already_34_days_passed_like_a_breeze_i_miss-",
+    "(3)joshduffneymrgct7-how_i_got_rid_of_my_smartphone-",
+    "(4)DrNoSurfgxlh5q-social_media_is_not_a_problem_anymore_but-",
+    "(4)deprocrastinationsmlf7l-creating_unrealistic_expectations_keep_going-",
+    "(4)madtownbro3rxuh1-first_month_of_17_down-",
+    "(6)Starrider316roeoec-my_journey_to_digital_minimalism-"
+    // Add more file names as necessary
+  ];
+
+  const files = {};
+  const allTags = new Set();
+
+  // Fetch and process all files using Promise.all
+  Promise.all(fileNames.map(fileName => fetchFile(fileName)))
+          .then(() => {
+            populateCategoryDropdown(); // Populate the new Category Dropdown
+            populateTagDropdown();      // Populate Tag Dropdown without category filter initially
+            performSearch();
+          })
+          .catch(error => {
+            console.error('Error loading files:', error);
+          });
+
+  async function fetchFile(fileName) {
+    try {
+      const response = await fetch(fileName);
+      if (!response.ok) throw new Error(`File not found: ${fileName}`);
+      const content = await response.text();
+
+      // Check if the file contains '#good-one'
+      const hasGoodOneTag = content.includes('#good-one');
+
+      // Store both the parsed content and the tag presence
+      files[fileName] = {
+        contentArray: parseFileContent(content),
+        hasGoodOneTag: hasGoodOneTag,
+      };
+    } catch (error) {
+      console.error('Error loading file:', error);
+    }
+  }
+
+  function parseFileContent(content) {
+    const titlesAndPosts = [];
+    let currentIndex = 0;
+
+    while (currentIndex < content.length) {
+      const titleMatch = content.indexOf('#title:{{', currentIndex);
+      if (titleMatch === -1) break;
+
+      // Extract the entire line containing the title and permalink
+      const endOfLineIndex = content.indexOf('\n', titleMatch);
+      const line = content.substring(titleMatch, endOfLineIndex !== -1 ? endOfLineIndex : content.length);
+      currentIndex = endOfLineIndex !== -1 ? endOfLineIndex + 1 : content.length;
+
+      // Extract title and permalink from the line
+      const titleData = extractContent(line, line.indexOf('#title:{{') + 8);
+      const permalinkData = extractPermalink(line);
+
+      let post = '';
+
+      const nextTitleIndex = content.indexOf('#title:{{', currentIndex);
+      const postMatch = content.indexOf('#post{{', currentIndex);
+
+      if (postMatch !== -1 && (nextTitleIndex === -1 || postMatch < nextTitleIndex)) {
+        const postData = extractContent(content, postMatch + 6);
+        post = postData.content;
+        currentIndex = postData.nextIndex;
+      }
+
+      // Extract tags
+      const tags = extractTags(line + '\n' + post);
+
+      // Remove tags from title and post
+      const cleanTitle = removeTags(titleData.content);
+      const cleanPost = removeTags(post);
+
+      titlesAndPosts.push({ title: cleanTitle, post: cleanPost, permalink: permalinkData, tags, rawPost: post });
+    }
+
+    return titlesAndPosts;
+  }
+
+  function extractContent(text, startIndex) {
+    let depth = 0;
+    let content = '';
+    let index = startIndex;
+
+    while (index < text.length) {
+      const char = text[index];
+      if (char === '{') {
+        depth++;
+        if (depth === 1) {
+          index++;
+          continue;
+        }
+      } else if (char === '}') {
+        depth--;
+        if (depth === 0) {
+          index++;
+          break;
+        }
+      }
+      if (depth >= 1) content += char;
+      index++;
+    }
+
+    return { content: content.trim(), nextIndex: index };
+  }
+
+  function extractPermalink(line) {
+    const permalinkMatch = line.match(/#permalink:([^,\s]+)/);
+    if (permalinkMatch && permalinkMatch[1]) {
+      return permalinkMatch[1];
+    }
+    return '';
+  }
+
+  function removeTags(text) {
+    let result = '';
+    let index = 0;
+
+    while (index < text.length) {
+      if (text[index] === '#') {
+        let tagStart = index + 1;
+        // Read tag name until we reach '{', ' ', or a newline
+        while (
+                tagStart < text.length &&
+                /[^\s{]/.test(text[tagStart])
+                ) {
+          tagStart++;
+        }
+        // Check if it's followed by '{{'
+        if (text[tagStart] === '{' && text[tagStart + 1] === '{') {
+          // Capture the content inside '{{...}}', handling nesting
+          let depth = 1;
+          let contentStart = tagStart + 2;
+          let contentEnd = contentStart;
+          while (contentEnd < text.length && depth > 0) {
+            if (text[contentEnd] === '{' && text[contentEnd + 1] === '{') {
+              depth++;
+              contentEnd += 2;
+            } else if (text[contentEnd] === '}' && text[contentEnd + 1] === '}') {
+              depth--;
+              contentEnd += 2;
+            } else {
+              contentEnd++;
+            }
+          }
+          if (depth !== 0) {
+            // Unbalanced braces, treat as normal text
+            result += text[index];
+            index++;
+            continue;
+          }
+          // Extract the content inside the outermost '{{...}}'
+          const content = text.substring(contentStart, contentEnd - 2);
+          // Recursively remove any nested tags within the content
+          const processedContent = removeTags(content);
+          // Append the processed content to the result
+          result += processedContent;
+          // Move the index to the end of the current tag
+          index = contentEnd;
+        } else {
+          // Not a tag with '{{', include as normal text
+          result += text.substring(index, tagStart);
+          index = tagStart;
+        }
+      } else {
+        result += text[index];
+        index++;
+      }
+    }
+    return result;
+  }
+
+  function extractTags(text) {
+    const tags = new Set();
+    let index = 0;
+
+    while (index < text.length) {
+      if (text[index] === '#') {
+        // Skip if the next characters are 'title' or 'post'
+        if (text.startsWith('title', index + 1) || text.startsWith('post', index + 1)) {
+          index += 1;
+          continue;
+        }
+
+        let tagStart = index + 1;
+        // Read tag name until we reach '{', ' ', or a newline
+        while (
+                tagStart < text.length &&
+                /[^\s{]/.test(text[tagStart])
+                ) {
+          tagStart++;
+        }
+        const tagName = text.substring(index + 1, tagStart);
+
+        // Check if it's followed by '{{'
+        if (text[tagStart] === '{' && text[tagStart + 1] === '{') {
+          // Add tag name to tags set
+          tags.add(tagName);
+          allTags.add(tagName);
+
+          // Skip over tagged content, handling nesting
+          let depth = 1;
+          index = tagStart + 2;
+          while (index < text.length && depth > 0) {
+            if (text[index] === '{' && text[index + 1] === '{') {
+              depth++;
+              index += 2;
+            } else if (text[index] === '}' && text[index + 1] === '}') {
+              depth--;
+              index += 2;
+            } else {
+              index++;
+            }
+          }
+          continue;
+        } else {
+          // Not a tag with '{{', skip
+          index = tagStart;
+        }
+      } else {
+        index++;
+      }
+    }
+    return Array.from(tags);
+  }
+
+  // Function to Strip Category Prefix from Tag
+  function stripCategoryPrefix(tag) {
+    for (const category of categories) {
+      const prefix = category + '-';
+      if (tag.startsWith(prefix)) {
+        return tag.substring(prefix.length);
+      }
+    }
+    return tag; // Return as-is if no prefix matches
+  }
+
+  // Updated highlightTags to accept an array of tags
+  function highlightTags(text, tagsToHighlight) {
+    if (!tagsToHighlight || tagsToHighlight.length === 0) return text; // Do not highlight if no tags are selected
+
+    let result = '';
+    let index = 0;
+
+    while (index < text.length) {
+      if (text[index] === '#') {
+        let tagStart = index + 1;
+        // Read tag name until we reach '{', ' ', or a newline
+        while (
+                tagStart < text.length &&
+                /[^\s{]/.test(text[tagStart])
+                ) {
+          tagStart++;
+        }
+        const tagName = text.substring(index + 1, tagStart);
+
+        // Check if it's followed by '{{' indicating tagged content
+        if (text[tagStart] === '{' && text[tagStart + 1] === '{') {
+          // Find the matching '}}', handling nested tags
+          let depth = 1;
+          let contentStart = tagStart + 2;
+          let contentEnd = contentStart;
+
+          while (contentEnd < text.length && depth > 0) {
+            if (text[contentEnd] === '{' && text[contentEnd + 1] === '{') {
+              depth++;
+              contentEnd += 2;
+            } else if (text[contentEnd] === '}' && text[contentEnd + 1] === '}') {
+              depth--;
+              contentEnd += 2;
+            } else {
+              contentEnd++;
+            }
+          }
+
+          const content = text.substring(contentStart, contentEnd - 2);
+
+          if (tagsToHighlight.includes(tagName)) {
+            // Highlight the content
+            result += `<span class="tag-highlight">${content}</span>`;
+          } else {
+            // Append content without highlighting
+            result += content;
+          }
+          index = contentEnd;
+          continue;
+        } else {
+          // Not a tag with '{{', include as normal text
+          result += text.substring(index, tagStart);
+          index = tagStart;
+        }
+      } else {
+        result += text[index];
+        index++;
+      }
+    }
+    return result;
+  }
+
+  function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+  }
+
+  // Function to Populate Category Dropdown with Full Names
+  function populateCategoryDropdown() {
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    categories.forEach(category => {
+      const option = document.createElement('option');
+      option.value = category; // Use abbreviation as the value
+      option.textContent = categoryMappings[category] || category; // Display full name or original if not mapped
+      categoryDropdown.appendChild(option);
+    });
+  }
+
+  // Function to Populate Tag Dropdown Based on Selected Category
+  function populateTagDropdown(selectedCategory = "") {
+    const tagDropdown = document.getElementById('tagDropdown');
+    tagDropdown.innerHTML = '<option value="">Select Tag</option>';
+    const sortedTags = Array.from(allTags).sort();
+    sortedTags.forEach(tag => {
+      if (!selectedCategory || tag.startsWith(selectedCategory + '-') || tag === selectedCategory) {
+        const option = document.createElement('option');
+        option.value = tag; // Keep the original tag with prefix as the value
+        option.textContent = stripCategoryPrefix(tag); // Display tag without prefix
+        tagDropdown.appendChild(option);
+      }
+    });
+  }
+
+  document.getElementById('search').addEventListener('input', performSearch);
+
+  let searchWorker;
+
+  function initializeWorker() {
+    if (window.Worker) {
+      const workerCode = `
+        self.onmessage = function (e) {
+          const { query, files, selectedTag, selectedCategory } = e.data;
+          const results = [];
+
+          Object.values(files).forEach(({ contentArray, hasGoodOneTag }) => {
+            contentArray.forEach(({ title, post, permalink, tags, rawPost }) => {
+              const titleLower = title.toLowerCase();
+              const postLower = post.toLowerCase();
+
+              const matchesQuery = titleLower.includes(query) || postLower.includes(query);
+              const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
+              const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
+
+              if (matchesQuery && matchesTag && matchesCategory) {
+                results.push({
+                  title,
+                  post,
+                  permalink,
+                  hasGoodOneTag,
+                  tags,
+                  rawPost
+                });
+              }
+            });
+          });
+
+          // Sort results: files with '#good-one' come first
+          results.sort((a, b) => {
+            if (a.hasGoodOneTag && !b.hasGoodOneTag) return -1;
+            if (!a.hasGoodOneTag && b.hasGoodOneTag) return 1;
+            return 0;
+          });
+
+          self.postMessage(results);
+        };
+      `;
+
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(blob);
+      searchWorker = new Worker(workerUrl);
+
+      searchWorker.onmessage = function (e) {
+        displayResults(e.data);
+      };
+    } else {
+      console.warn('Web Workers are not supported in your browser.');
+    }
+  }
+
+  initializeWorker();
+
+  function performSearch() {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    const selectedTag = document.getElementById('tagDropdown').value || null;
+    const selectedCategory = document.getElementById('categoryDropdown').value || null;
+
+    if (searchWorker) {
+      searchWorker.postMessage({ query, files, selectedTag, selectedCategory });
+    } else {
+      // Fallback to synchronous search if Web Workers are not supported
+      const results = performSearchSync(query, selectedTag, selectedCategory);
+      displayResults(results);
+    }
+  }
+  // Updated performSearchSync Function
+  // Updated performSearchSync Function
+  function performSearchSync(query, selectedTag, selectedCategory) {
+    const results = [];
+
+    Object.keys(files).forEach((fileName) => {
+      const { contentArray, hasGoodOneTag } = files[fileName];
+
+      const matchingPosts = [];
+
+      contentArray.forEach(({ title, post, permalink, tags, rawPost }) => {
+        const titleLower = title.toLowerCase();
+        const postLower = post.toLowerCase();
+
+        const matchesQuery = titleLower.includes(query) || postLower.includes(query);
+        const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
+        const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
+
+        if (matchesQuery && matchesTag && matchesCategory) {
+          matchingPosts.push({
+            title,
+            post,
+            permalink,
+            hasGoodOneTag,
+            tags,
+            rawPost
+          });
+        }
+      });
+
+      if (matchingPosts.length > 0) {
+        results.push({
+          fileName,
+          hasGoodOneTag,
+          posts: matchingPosts
+        });
+      }
+    });
+
+    // Sort results: files with '#good-one' come first
+    results.sort((a, b) => {
+      if (a.hasGoodOneTag && !b.hasGoodOneTag) return -1;
+      if (!a.hasGoodOneTag && b.hasGoodOneTag) return 1;
+      return 0;
+    });
+
+    return results;
+  }
+
+  // Updated Worker Initialization
+  function initializeWorker() {
+    if (window.Worker) {
+      const workerCode = `
+        self.onmessage = function (e) {
+          const { query, files, selectedTag, selectedCategory } = e.data;
+          const results = [];
+
+          Object.keys(files).forEach((fileName) => {
+            const { contentArray, hasGoodOneTag } = files[fileName];
+
+            const matchingPosts = [];
+
+            contentArray.forEach(({ title, post, permalink, tags, rawPost }) => {
+              const titleLower = title.toLowerCase();
+              const postLower = post.toLowerCase();
+
+              const matchesQuery = titleLower.includes(query) || postLower.includes(query);
+              const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
+              const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
+
+              if (matchesQuery && matchesTag && matchesCategory) {
+                matchingPosts.push({
+                  title,
+                  post,
+                  permalink,
+                  hasGoodOneTag,
+                  tags,
+                  rawPost
+                });
+              }
+            });
+
+            if (matchingPosts.length > 0) {
+              results.push({
+                fileName,
+                hasGoodOneTag,
+                posts: matchingPosts
+              });
+            }
+          });
+
+          // Sort results: files with '#good-one' come first
+          results.sort((a, b) => {
+            if (a.hasGoodOneTag && !b.hasGoodOneTag) return -1;
+            if (!a.hasGoodOneTag && b.hasGoodOneTag) return 1;
+            return 0;
+          });
+
+          self.postMessage(results);
+        };
+      `;
+
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(blob);
+      searchWorker = new Worker(workerUrl);
+
+      searchWorker.onmessage = function (e) {
+        displayResults(e.data);
+      };
+    } else {
+      console.warn('Web Workers are not supported in your browser.');
+    }
+  }
+
+  // Updated displayResults Function
+  function displayResults(results) {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    const selectedTag = document.getElementById('tagDropdown').value || null;
+    const selectedCategory = document.getElementById('categoryDropdown').value || null;
+    const suggestionsDiv = document.getElementById('suggestions');
+    const contentContainer = document.getElementById('content-container');
+
+    suggestionsDiv.innerHTML = '';
+    contentContainer.innerHTML = '';
+
+    const fragment = document.createDocumentFragment();
+
+    // Determine tags to highlight based on selected category and tag
+    let tagsToHighlight = [];
+    if (selectedCategory) {
+      // Get all tags that start with the selected category or exactly match the category
+      tagsToHighlight = Array.from(allTags).filter(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory);
+    }
+    if (selectedTag) {
+      // Add the selected tag to the list if not already included
+      if (!tagsToHighlight.includes(selectedTag)) {
+        tagsToHighlight.push(selectedTag);
+      }
+    }
+
+    results.forEach(({ fileName, hasGoodOneTag, posts }) => {
+      // Create a container for the file using the existing 'file-content' class
+      const fileDiv = document.createElement('div');
+      fileDiv.className = 'file-content';
+
+      // Loop over posts in order
+      posts.forEach((postData, index) => {
+        const { title, post, permalink, tags, rawPost } = postData;
+
+        // Create a container for each post within the file
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post-content';
+
+        // Add subheading for each post
+        const postNumber = index + 1;
+        const postHeading = document.createElement('h3');
+        postHeading.className = 'post-heading';
+        postHeading.textContent = `Post ${postNumber} from this author:`;
+
+        const fileTitleDiv = document.createElement('div');
+        fileTitleDiv.className = 'file-name';
+
+        const fullPermalink = permalink ? `https://reddit.com${permalink}` : '#';
+
+        // Highlight tags in the title
+        let highlightedTitle = title;
+        tagsToHighlight.forEach(tag => {
+          const tagPattern = new RegExp(`#${tag}\\{{2}([^}]+)\\}{2}`, 'g');
+          highlightedTitle = highlightedTitle.replace(tagPattern, `<span class="tag-highlight">$1</span>`);
+        });
+        // Highlight search query in the title
+        highlightedTitle = highlightText(highlightedTitle, query);
+
+        fileTitleDiv.innerHTML = `${highlightedTitle} <a href="${fullPermalink}" target="_blank" rel="noopener noreferrer" class="permalink">[Link]</a>`;
+
+        const filePostDiv = document.createElement('div');
+        let processedPost;
+
+        if (selectedCategory || selectedTag) {
+          // Use rawPost which contains tags
+          processedPost = rawPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
+          // Highlight tags based on selected category and tag
+          processedPost = highlightTags(processedPost, tagsToHighlight);
+        } else {
+          // Use cleanPost which has tags removed
+          processedPost = post.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
+        }
+
+        // Highlight search query in the post
+        processedPost = highlightText(processedPost, query);
+
+        filePostDiv.innerHTML = marked.parse(processedPost);
+
+        // Append the heading, title, and post content to the post container
+        postDiv.appendChild(postHeading);
+        postDiv.appendChild(fileTitleDiv);
+        postDiv.appendChild(filePostDiv);
+
+        // Append the post container to the file container
+        fileDiv.appendChild(postDiv);
+      });
+
+      fragment.appendChild(fileDiv);
+    });
+
+    contentContainer.appendChild(fragment);
+
+    // Remove hidden class when new search is performed
+    document.querySelectorAll('.file-content').forEach((post) => {
+      post.classList.remove('hidden');
+    });
+  }
+
+  function showPost(selectedTitle) {
+    const allPosts = document.querySelectorAll('.file-content');
+
+    allPosts.forEach((post) => {
+      const postTitle = post.querySelector('.file-name').textContent;
+      if (postTitle.includes(selectedTitle.replace(/<[^>]+>/g, ''))) {
+        post.classList.remove('hidden');
+      } else {
+        post.classList.add('hidden');
+      }
+    });
+  }
+
+  // New Function to Filter Tags and Highlight Based on Selected Category
+  function filterTagsAndHighlight() {
+    const selectedCategory = document.getElementById('categoryDropdown').value;
+    populateTagDropdown(selectedCategory); // Populate Tag Dropdown based on Category
+    performSearch(); // Perform search with updated tags and highlighting
+  }
+</script>
+
+</body>
+</html>

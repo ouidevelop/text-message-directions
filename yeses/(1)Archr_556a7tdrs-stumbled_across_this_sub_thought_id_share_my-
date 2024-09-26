@@ -1,0 +1,16 @@
+#yes #title:{{stumbled across this sub, thought I'd share my story/method.}} #permalink:/r/nosurf/comments/a7tdrs/stumbled_across_this_sub_thought_id_share_my/, #created:1545272736
+
+#post{{thought I'd share my "technique" for limiting my internet use, I didn't see this in the sidebar posts so I thought I might make a post. about a year ago I was spending *way* to much time on the internet so I eventually said fuck it and went for the nuclear option. I had been using #tech-not-work{{different apps and extensions to try to block internet access but they where all so easy to get around they did little good for me}}. The "nuclear option" I came up with (for MacBooks only)
+
+#tech-misc{{1. create 3 user accounts, one as an admin account, this account you don't actually use for anything, one for goofing off, and one for work.
+1. enable parental controls for your work user profile. With parental controls on a mac, you have the option to block all websites by default and create a whitelist of allowed websites, or allow all sites and create a blacklist, choose the option to block *all* websites by default (there are infinite distractions on the internet and even if you block the most distracting sites you can always find another) and whitelist only sites that you need for work. For me, that is stuff like google drive, Wikipedia, my school's website, and Pandora for music.
+
+1.  On your goof-off profile, allow all websites by default, and use the parental controls to create a time limit. You have the option to put a limit on your usage per day and create schedules. I'd recommend both options. I like to limit my usage to 30 min on weekdays and 1.5 hours on weekends, then also set it to kick me off at 9 so I know when to go to bed.
+
+1. The most important part, on the 3rd account, the one created with admin privileges, change the password to something that is long and complicated, something you won't be able to memorize. This is the account password you would need to alter the parental control settings, without it, there is no way to change your computer back to default. Write your password down (make several copies just in case) and stash them places that would be inconvenient for you to get at. 
+
+1. Last go to users and groups settings and disable the guest user account.}}
+
+The parental control settings on mac are great because they run through admin so when you use them to block something there are *NO* ways to weasel your way around them without the admin password. There are some disadvantages, mainly parental controls is *too* good at its job. Web browsers like chrome or firefox need to connect to too many IP addresses. Safari is the only browser that works properly, so you're stuck it on your work profile, which isn't a big deal. On a final note, I would wait about a week or so before locking down the admin password, it takes a little trial and error to get everything working smoothly.
+
+EDIT: weekdays}}
