@@ -178,6 +178,18 @@
       #intro p {
         font-size: 1.1em;
       }
+
+      /* Style for the checkbox label */
+      .search-container label {
+        display: flex;
+        align-items: center;
+        font-size: 1em;
+      }
+
+      /* Style for the checkbox input */
+      .search-container input[type="checkbox"] {
+        margin-right: 5px;
+      }
     }
   </style>
 </head>
@@ -205,6 +217,8 @@
     <option value="">Select Tag</option>
     <!-- Options will be populated by JavaScript -->
   </select>
+
+  <label><input type="checkbox" id="goodOneCheckbox" onchange="performSearch()"> recommended only</label>
 
   <div id="suggestions" class="suggestions"></div>
 </div>
@@ -730,49 +744,55 @@
   function initializeWorker() {
     if (window.Worker) {
       const workerCode = `
-        self.onmessage = function (e) {
-          const { query, files, selectedTag, selectedCategory } = e.data;
-          const results = [];
+      self.onmessage = function (e) {
+        const { query, files, selectedTag, selectedCategory, onlyGoodOnes } = e.data;
+        const results = [];
 
-          Object.keys(files).forEach((fileName) => {
-            const { contentArray, hasGoodOneTag } = files[fileName];
+        Object.keys(files).forEach((fileName) => {
+          const { contentArray, hasGoodOneTag } = files[fileName];
 
-            let fileMatchesCriteria = false;
+          // Filter files based on the 'onlyGoodOnes' flag and 'hasGoodOneTag'
+          if (onlyGoodOnes && !hasGoodOneTag) {
+            // Skip this file
+            return;
+          }
 
-            // Check if any post in the file matches the search criteria
-            contentArray.forEach(({ title, post, tags }) => {
-              const titleLower = title.toLowerCase();
-              const postLower = post.toLowerCase();
+          let fileMatchesCriteria = false;
 
-              const matchesQuery = titleLower.includes(query) || postLower.includes(query);
-              const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
-              const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
+          // Check if any post in the file matches the search criteria
+          contentArray.forEach(({ title, post, tags }) => {
+            const titleLower = title.toLowerCase();
+            const postLower = post.toLowerCase();
 
-              if (matchesQuery && matchesTag && matchesCategory) {
-                fileMatchesCriteria = true;
-              }
-            });
+            const matchesQuery = titleLower.includes(query) || postLower.includes(query);
+            const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
+            const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
 
-            if (fileMatchesCriteria) {
-              // Include all posts from the file
-              results.push({
-                fileName,
-                hasGoodOneTag,
-                posts: contentArray // Include all posts, not just matching ones
-              });
+            if (matchesQuery && matchesTag && matchesCategory) {
+              fileMatchesCriteria = true;
             }
           });
 
-          // Sort results: files with '#good-one' come first
-          results.sort((a, b) => {
-            if (a.hasGoodOneTag && !b.hasGoodOneTag) return -1;
-            if (!a.hasGoodOneTag && b.hasGoodOneTag) return 1;
-            return 0;
-          });
+          if (fileMatchesCriteria) {
+            // Include all posts from the file
+            results.push({
+              fileName,
+              hasGoodOneTag,
+              posts: contentArray // Include all posts, not just matching ones
+            });
+          }
+        });
 
-          self.postMessage(results);
-        };
-      `;
+        // Sort results: files with '#good-one' come first
+        results.sort((a, b) => {
+          if (a.hasGoodOneTag && !b.hasGoodOneTag) return -1;
+          if (!a.hasGoodOneTag && b.hasGoodOneTag) return 1;
+          return 0;
+        });
+
+        self.postMessage(results);
+      };
+    `;
 
       const blob = new Blob([workerCode], { type: 'application/javascript' });
       const workerUrl = URL.createObjectURL(blob);
@@ -792,21 +812,28 @@
     const query = document.getElementById('search').value.trim().toLowerCase();
     const selectedTag = document.getElementById('tagDropdown').value || null;
     const selectedCategory = document.getElementById('categoryDropdown').value || null;
+    const onlyGoodOnes = document.getElementById('goodOneCheckbox').checked;
 
     if (searchWorker) {
-      searchWorker.postMessage({ query, files, selectedTag, selectedCategory });
+      searchWorker.postMessage({ query, files, selectedTag, selectedCategory, onlyGoodOnes });
     } else {
       // Fallback to synchronous search if Web Workers are not supported
-      const results = performSearchSync(query, selectedTag, selectedCategory);
+      const results = performSearchSync(query, selectedTag, selectedCategory, onlyGoodOnes);
       displayResults(results);
     }
   }
 
-  function performSearchSync(query, selectedTag, selectedCategory) {
+  function performSearchSync(query, selectedTag, selectedCategory, onlyGoodOnes) {
     const results = [];
 
     Object.keys(files).forEach((fileName) => {
       const { contentArray, hasGoodOneTag } = files[fileName];
+
+      // Filter files based on the 'onlyGoodOnes' flag and 'hasGoodOneTag'
+      if (onlyGoodOnes && !hasGoodOneTag) {
+        // Skip this file
+        return;
+      }
 
       let fileMatchesCriteria = false;
 
@@ -883,7 +910,7 @@
         const postNumber = index + 1;
         const postHeading = document.createElement('h3');
         postHeading.className = 'post-heading';
-        postHeading.textContent = `Post ${postNumber} from this author:`;
+        postHeading.textContent = `Post ${postNumber}:`;
 
         const fileTitleDiv = document.createElement('div');
         fileTitleDiv.className = 'file-name';
@@ -897,6 +924,9 @@
             const tagPattern = new RegExp(`#${tag}\\{{2}([^}]+)\\}{2}`, 'g');
             highlightedTitle = highlightedTitle.replace(tagPattern, `<span class="tag-highlight">$1</span>`);
           });
+        } else {
+          // Remove tags from the title if no tags are selected
+          highlightedTitle = removeTags(highlightedTitle);
         }
 
         // Highlight search query in the title
@@ -907,10 +937,15 @@
         const filePostDiv = document.createElement('div');
         let processedPost;
 
-        // Use rawPost which contains tags
-        processedPost = rawPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
-        // Highlight tags based on selected category and tag
-        processedPost = highlightTags(processedPost, tagsToHighlight);
+        if (tagsToHighlight.length > 0) {
+          // Use rawPost which contains tags
+          processedPost = rawPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
+          // Highlight tags based on selected category and tag
+          processedPost = highlightTags(processedPost, tagsToHighlight);
+        } else {
+          // Use cleanPost which has tags removed
+          processedPost = post.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
+        }
 
         // Highlight search query in the post
         processedPost = highlightText(processedPost, query);
@@ -937,20 +972,7 @@
     });
   }
 
-  function showPost(selectedTitle) {
-    const allPosts = document.querySelectorAll('.file-content');
-
-    allPosts.forEach((post) => {
-      const postTitle = post.querySelector('.file-name').textContent;
-      if (postTitle.includes(selectedTitle.replace(/<[^>]+>/g, ''))) {
-        post.classList.remove('hidden');
-      } else {
-        post.classList.add('hidden');
-      }
-    });
-  }
-
-  // New Function to Filter Tags and Highlight Based on Selected Category
+  // Function to Filter Tags and Highlight Based on Selected Category
   function filterTagsAndHighlight() {
     const selectedCategory = document.getElementById('categoryDropdown').value;
     populateTagDropdown(selectedCategory); // Populate Tag Dropdown based on Category
