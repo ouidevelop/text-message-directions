@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Text File Search with Tags</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!--  <link rel="stylesheet" href="style.css">-->
+  <!--  <link rel="stylesheet" href="style.css">-->
   <style>
     /* Base Styles */
     body {
@@ -734,8 +734,13 @@
           const { query, files, selectedTag, selectedCategory } = e.data;
           const results = [];
 
-          Object.values(files).forEach(({ contentArray, hasGoodOneTag }) => {
-            contentArray.forEach(({ title, post, permalink, tags, rawPost }) => {
+          Object.keys(files).forEach((fileName) => {
+            const { contentArray, hasGoodOneTag } = files[fileName];
+
+            let fileMatchesCriteria = false;
+
+            // Check if any post in the file matches the search criteria
+            contentArray.forEach(({ title, post, tags }) => {
               const titleLower = title.toLowerCase();
               const postLower = post.toLowerCase();
 
@@ -744,16 +749,18 @@
               const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
 
               if (matchesQuery && matchesTag && matchesCategory) {
-                results.push({
-                  title,
-                  post,
-                  permalink,
-                  hasGoodOneTag,
-                  tags,
-                  rawPost
-                });
+                fileMatchesCriteria = true;
               }
             });
+
+            if (fileMatchesCriteria) {
+              // Include all posts from the file
+              results.push({
+                fileName,
+                hasGoodOneTag,
+                posts: contentArray // Include all posts, not just matching ones
+              });
+            }
           });
 
           // Sort results: files with '#good-one' come first
@@ -794,17 +801,17 @@
       displayResults(results);
     }
   }
-  // Updated performSearchSync Function
-  // Updated performSearchSync Function
+
   function performSearchSync(query, selectedTag, selectedCategory) {
     const results = [];
 
     Object.keys(files).forEach((fileName) => {
       const { contentArray, hasGoodOneTag } = files[fileName];
 
-      const matchingPosts = [];
+      let fileMatchesCriteria = false;
 
-      contentArray.forEach(({ title, post, permalink, tags, rawPost }) => {
+      // Check if any post in the file matches the search criteria
+      contentArray.forEach(({ title, post, tags }) => {
         const titleLower = title.toLowerCase();
         const postLower = post.toLowerCase();
 
@@ -813,22 +820,16 @@
         const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
 
         if (matchesQuery && matchesTag && matchesCategory) {
-          matchingPosts.push({
-            title,
-            post,
-            permalink,
-            hasGoodOneTag,
-            tags,
-            rawPost
-          });
+          fileMatchesCriteria = true;
         }
       });
 
-      if (matchingPosts.length > 0) {
+      if (fileMatchesCriteria) {
+        // Include all posts from the file
         results.push({
           fileName,
           hasGoodOneTag,
-          posts: matchingPosts
+          posts: contentArray // Include all posts, not just matching ones
         });
       }
     });
@@ -843,72 +844,6 @@
     return results;
   }
 
-  // Updated Worker Initialization
-  function initializeWorker() {
-    if (window.Worker) {
-      const workerCode = `
-        self.onmessage = function (e) {
-          const { query, files, selectedTag, selectedCategory } = e.data;
-          const results = [];
-
-          Object.keys(files).forEach((fileName) => {
-            const { contentArray, hasGoodOneTag } = files[fileName];
-
-            const matchingPosts = [];
-
-            contentArray.forEach(({ title, post, permalink, tags, rawPost }) => {
-              const titleLower = title.toLowerCase();
-              const postLower = post.toLowerCase();
-
-              const matchesQuery = titleLower.includes(query) || postLower.includes(query);
-              const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
-              const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
-
-              if (matchesQuery && matchesTag && matchesCategory) {
-                matchingPosts.push({
-                  title,
-                  post,
-                  permalink,
-                  hasGoodOneTag,
-                  tags,
-                  rawPost
-                });
-              }
-            });
-
-            if (matchingPosts.length > 0) {
-              results.push({
-                fileName,
-                hasGoodOneTag,
-                posts: matchingPosts
-              });
-            }
-          });
-
-          // Sort results: files with '#good-one' come first
-          results.sort((a, b) => {
-            if (a.hasGoodOneTag && !b.hasGoodOneTag) return -1;
-            if (!a.hasGoodOneTag && b.hasGoodOneTag) return 1;
-            return 0;
-          });
-
-          self.postMessage(results);
-        };
-      `;
-
-      const blob = new Blob([workerCode], { type: 'application/javascript' });
-      const workerUrl = URL.createObjectURL(blob);
-      searchWorker = new Worker(workerUrl);
-
-      searchWorker.onmessage = function (e) {
-        displayResults(e.data);
-      };
-    } else {
-      console.warn('Web Workers are not supported in your browser.');
-    }
-  }
-
-  // Updated displayResults Function
   function displayResults(results) {
     const query = document.getElementById('search').value.trim().toLowerCase();
     const selectedTag = document.getElementById('tagDropdown').value || null;
@@ -923,15 +858,12 @@
 
     // Determine tags to highlight based on selected category and tag
     let tagsToHighlight = [];
-    if (selectedCategory) {
-      // Get all tags that start with the selected category or exactly match the category
-      tagsToHighlight = Array.from(allTags).filter(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory);
-    }
     if (selectedTag) {
-      // Add the selected tag to the list if not already included
-      if (!tagsToHighlight.includes(selectedTag)) {
-        tagsToHighlight.push(selectedTag);
-      }
+      // Only highlight the selected tag
+      tagsToHighlight = [selectedTag];
+    } else if (selectedCategory) {
+      // Highlight all tags in the selected category
+      tagsToHighlight = Array.from(allTags).filter(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory);
     }
 
     results.forEach(({ fileName, hasGoodOneTag, posts }) => {
@@ -960,10 +892,13 @@
 
         // Highlight tags in the title
         let highlightedTitle = title;
-        tagsToHighlight.forEach(tag => {
-          const tagPattern = new RegExp(`#${tag}\\{{2}([^}]+)\\}{2}`, 'g');
-          highlightedTitle = highlightedTitle.replace(tagPattern, `<span class="tag-highlight">$1</span>`);
-        });
+        if (tagsToHighlight.length > 0) {
+          tagsToHighlight.forEach(tag => {
+            const tagPattern = new RegExp(`#${tag}\\{{2}([^}]+)\\}{2}`, 'g');
+            highlightedTitle = highlightedTitle.replace(tagPattern, `<span class="tag-highlight">$1</span>`);
+          });
+        }
+
         // Highlight search query in the title
         highlightedTitle = highlightText(highlightedTitle, query);
 
@@ -972,15 +907,10 @@
         const filePostDiv = document.createElement('div');
         let processedPost;
 
-        if (selectedCategory || selectedTag) {
-          // Use rawPost which contains tags
-          processedPost = rawPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
-          // Highlight tags based on selected category and tag
-          processedPost = highlightTags(processedPost, tagsToHighlight);
-        } else {
-          // Use cleanPost which has tags removed
-          processedPost = post.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
-        }
+        // Use rawPost which contains tags
+        processedPost = rawPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
+        // Highlight tags based on selected category and tag
+        processedPost = highlightTags(processedPost, tagsToHighlight);
 
         // Highlight search query in the post
         processedPost = highlightText(processedPost, query);
