@@ -212,7 +212,7 @@
   </select>
 
   <!-- Tag Dropdown -->
-  <select id="tagDropdown" onchange="performSearch()">
+  <select id="tagDropdown" style="display: none;" onchange="performSearch()">
     <option value="">Select Tag</option>
     <!-- Options will be populated by JavaScript -->
   </select>
@@ -415,14 +415,14 @@
 
   // Fetch and process all files using Promise.all
   Promise.all(fileNames.map(fileName => fetchFile(fileName)))
-          .then(() => {
-            populateCategoryDropdown(); // Populate the new Category Dropdown
-            populateTagDropdown();      // Populate Tag Dropdown without category filter initially
-            performSearch();
-          })
-          .catch(error => {
-            console.error('Error loading files:', error);
-          });
+    .then(() => {
+      populateCategoryDropdown(); // Populate the new Category Dropdown
+      populateTagDropdown();      // Populate Tag Dropdown without category filter initially
+      performSearch();
+    })
+    .catch(error => {
+      console.error('Error loading files:', error);
+    });
 
   async function fetchFile(fileName) {
     try {
@@ -724,10 +724,21 @@
   // Function to Populate Tag Dropdown Based on Selected Category
   function populateTagDropdown(selectedCategory = "") {
     const tagDropdown = document.getElementById('tagDropdown');
-    tagDropdown.innerHTML = '<option value="">Select Tag</option>';
+
+    if (!selectedCategory) {
+      tagDropdown.style.display = 'none'; // Hide the tag dropdown
+      return;
+    } else {
+      tagDropdown.style.display = ''; // Show the tag dropdown
+    }
+
+    // Update the placeholder text with the selected category's full name
+    const categoryName = categoryMappings[selectedCategory] || selectedCategory;
+    tagDropdown.innerHTML = `<option value="">Select tag in ${categoryName} category</option>`;
+
     const sortedTags = Array.from(allTags).sort();
     sortedTags.forEach(tag => {
-      if (!selectedCategory || tag.startsWith(selectedCategory + '-') || tag === selectedCategory) {
+      if (tag.startsWith(selectedCategory + '-') || tag === selectedCategory) {
         const option = document.createElement('option');
         option.value = tag; // Keep the original tag with prefix as the value
         option.textContent = stripCategoryPrefix(tag); // Display tag without prefix
@@ -974,7 +985,7 @@
   // Function to Filter Tags and Highlight Based on Selected Category
   function filterTagsAndHighlight() {
     const selectedCategory = document.getElementById('categoryDropdown').value;
-    populateTagDropdown(selectedCategory); // Populate Tag Dropdown based on Category
+    populateTagDropdown(selectedCategory); // Update Tag Dropdown based on Category
     performSearch(); // Perform search with updated tags and highlighting
   }
 </script>
