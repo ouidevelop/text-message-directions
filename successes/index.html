@@ -13,6 +13,12 @@
       padding: 0;
     }
 
+    /* Highlighted Suggestion */
+    .highlighted-suggestion {
+      background-color: #d9edf7; /* Light blue background */
+      font-weight: bold;
+    }
+
     /* Introductory Section Styles */
     #intro {
       margin: 20px auto;          /* Center the intro section */
@@ -132,6 +138,14 @@
     .permalink {
       font-size: 0.9em;
       margin-left: 10px;
+    }
+
+    /* Highlighted Post */
+    .highlighted-post {
+      border: 2px solid #f39c12; /* Orange border */
+      background-color: #fcf8e3; /* Light yellow background */
+      padding: 10px;
+      border-radius: 5px;
     }
 
     /* Responsive Styles */
@@ -903,6 +917,8 @@
       tagsToHighlight = Array.from(allTags).filter(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory);
     }
 
+    const suggestionTitles = [];
+
     results.forEach(({ fileName, hasGoodOneTag, posts }) => {
       // Create a container for the file using the existing 'file-content' class
       const fileDiv = document.createElement('div');
@@ -911,6 +927,9 @@
       // Loop over posts in order
       posts.forEach((postData, index) => {
         const { title, post, permalink, tags, rawPost } = postData;
+
+        // Collect titles for suggestions
+        suggestionTitles.push(title);
 
         // Create a container for each post within the file
         const postDiv = document.createElement('div');
@@ -980,6 +999,60 @@
     document.querySelectorAll('.file-content').forEach((post) => {
       post.classList.remove('hidden');
     });
+
+    // Update suggestions
+    if (suggestionTitles.length > 0) {
+      const suggestionsFragment = document.createDocumentFragment();
+      suggestionTitles.forEach((title) => {
+        const suggestionDiv = document.createElement('div');
+        suggestionDiv.className = 'suggestion';
+        // Highlight search query in the suggestion
+        const cleanTitle = removeTags(title);
+        suggestionDiv.innerHTML = highlightText(cleanTitle, query);
+        suggestionDiv.onclick = () => showPost(title, suggestionDiv); // Pass suggestionDiv
+        suggestionsFragment.appendChild(suggestionDiv);
+      });
+      suggestionsDiv.appendChild(suggestionsFragment);
+    }
+  }
+
+  function showPost(selectedTitle, suggestionElement) {
+    const allFileContents = document.querySelectorAll('.file-content');
+
+    allFileContents.forEach((fileContent) => {
+      let hasMatchingPost = false;
+
+      const postContents = fileContent.querySelectorAll('.post-content');
+
+      postContents.forEach((postContent) => {
+        const postTitleElement = postContent.querySelector('.file-name');
+        if (postTitleElement) {
+          const postTitle = postTitleElement.textContent;
+          // Remove any previous highlight
+          postContent.classList.remove('highlighted-post');
+          if (postTitle.includes(selectedTitle.replace(/<[^>]+>/g, ''))) {
+            // This post matches the selected title
+            hasMatchingPost = true;
+            postContent.classList.add('highlighted-post');
+          }
+        }
+      });
+
+      if (hasMatchingPost) {
+        // Show the file container
+        fileContent.classList.remove('hidden');
+      } else {
+        // Hide the file container
+        fileContent.classList.add('hidden');
+      }
+    });
+
+    // Highlight the selected suggestion
+    const allSuggestions = document.querySelectorAll('.suggestion');
+    allSuggestions.forEach((suggestion) => {
+      suggestion.classList.remove('highlighted-suggestion');
+    });
+    suggestionElement.classList.add('highlighted-suggestion');
   }
 
   // Function to Filter Tags and Highlight Based on Selected Category
