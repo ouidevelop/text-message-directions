@@ -4,208 +4,7 @@
   <meta charset="UTF-8">
   <title>Text File Search with Tags</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!--  <link rel="stylesheet" href="style.css">-->
-  <style>
-    /* Base Styles */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Highlighted Suggestion */
-    .highlighted-suggestion {
-      background-color: #d9edf7; /* Light blue background */
-      font-weight: bold;
-    }
-
-    /* Introductory Section Styles */
-    #intro {
-      margin: 20px auto;          /* Center the intro section */
-      padding: 20px;              /* Add padding for inner spacing */
-      max-width: 1200px;          /* Limit the maximum width */
-      box-sizing: border-box;     /* Include padding within the width */
-    }
-
-    /* Search Container Styles */
-    .search-container {
-      margin: 20px auto;          /* Center the container horizontally */
-      max-width: 1200px;          /* Match the width of #intro and .content-container */
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      box-sizing: border-box;     /* Include padding within the max-width */
-      padding: 0 20px;            /* Optional: Add horizontal padding for better spacing */
-    }
-
-    #search {
-      flex: 1;
-      padding: 10px;
-      font-size: 1em;
-      box-sizing: border-box;
-    }
-
-    /* Category and Tag Dropdown Styles */
-    #categoryDropdown,
-    #tagDropdown {
-      padding: 10px;
-      font-size: 1em;
-    }
-
-    /* Suggestions Styles */
-    .suggestions {
-      border: 1px solid #ccc;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-top: 5px;
-      width: 100%;
-    }
-
-    .suggestion {
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    .suggestion:hover {
-      background-color: #f0f0f0;
-    }
-
-    /* Highlight Styles */
-    .highlight {
-      background-color: yellow;
-      font-weight: bold;
-    }
-
-    .tag-highlight {
-      background-color: lightgreen;
-      font-weight: bold;
-    }
-
-    /* Content Container */
-    .content-container {
-      margin: 20px auto;          /* Center the container */
-      padding: 20px;              /* Add padding for inner spacing */
-      max-width: 1200px;          /* Limit the maximum width */
-      box-sizing: border-box;     /* Include padding within the width */
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-
-    /* File Content Container */
-    .file-content {
-      border: 1px solid #ddd;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-
-    .file-content:nth-child(odd) {
-      background-color: #f0f0f0;
-    }
-
-    /* Post Content within File */
-    .post-content {
-      margin-bottom: 20px;
-    }
-
-    .post-heading {
-      font-size: 1.2em;
-      margin-bottom: 5px;
-      color: #555;
-    }
-
-    /* Optional separator between posts within the same file */
-    .post-content + .post-content {
-      border-top: 1px dashed #ccc;
-      padding-top: 15px;
-    }
-
-    /* File Name */
-    .file-name {
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
-      font-size: 1.2em;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .permalink {
-      font-size: 0.9em;
-      margin-left: 10px;
-    }
-
-    /* Highlighted Post */
-    .highlighted-post {
-      border: 2px solid #f39c12; /* Orange border */
-      background-color: #fcf8e3; /* Light yellow background */
-      padding: 10px;
-      border-radius: 5px;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 600px) {
-      .search-container {
-        margin: 10px;
-        flex-direction: column;
-      }
-
-      #search,
-      #categoryDropdown,
-      #tagDropdown {
-        font-size: 1.2em;
-        padding: 12px;
-        width: 100%;
-      }
-
-      .suggestions {
-        max-height: 200px;
-        font-size: 1.1em;
-      }
-
-      .suggestion {
-        padding: 15px;
-      }
-
-      .file-name {
-        font-size: 1.4em;
-      }
-
-      .file-content {
-        padding: 10px;
-      }
-
-      .file-content p {
-        font-size: 1.1em;
-      }
-
-      body {
-        font-size: 16px;
-      }
-
-      /* Ensure Introductory Content is Responsive */
-      #intro p {
-        font-size: 1.1em;
-      }
-
-      /* Style for the checkbox label */
-      .search-container label {
-        display: flex;
-        align-items: center;
-        font-size: 1em;
-      }
-
-      /* Style for the checkbox input */
-      .search-container input[type="checkbox"] {
-        margin-right: 5px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -244,7 +43,9 @@
 
 <!-- Your existing JavaScript -->
 <script>
-  // Define Categories with Mappings for Abbreviations
+  // ========================
+  // Constants and Data
+  // ========================
   const categoryMappings = {
     "a-t": "addicted to",
     "bad": "negatives of quitting",
@@ -257,7 +58,6 @@
     "withdrawal": "withdrawal"
   };
 
-  // Extracted Categories Array from Mappings
   const categories = Object.keys(categoryMappings);
 
   const fileNames = [
@@ -424,19 +224,25 @@
     // Add more file names as necessary
   ];
 
+  // ========================
+  // Global Variables
+  // ========================
   const files = {};
   const allTags = new Set();
+  let searchWorker;
+  let initialLoad = true;
+  let lastUserAction = 'search'; // Can be 'search' or 'title'
 
-  // Fetch and process all files using Promise.all
-  Promise.all(fileNames.map(fileName => fetchFile(fileName)))
-    .then(() => {
-      populateCategoryDropdown(); // Populate the new Category Dropdown
-      populateTagDropdown();      // Populate Tag Dropdown without category filter initially
-      performSearch();
-    })
-    .catch(error => {
-      console.error('Error loading files:', error);
-    });
+  // ========================
+  // Utility Functions
+  // ========================
+  function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+  }
 
   async function fetchFile(fileName) {
     try {
@@ -444,10 +250,8 @@
       if (!response.ok) throw new Error(`File not found: ${fileName}`);
       const content = await response.text();
 
-      // Check if the file contains '#good-one'
       const hasGoodOneTag = content.includes('#good-one');
 
-      // Store both the parsed content and the tag presence
       files[fileName] = {
         contentArray: parseFileContent(content),
         hasGoodOneTag: hasGoodOneTag,
@@ -648,12 +452,12 @@
   // Function to Strip Category Prefix from Tag
   function stripCategoryPrefix(tag) {
     for (const category of categories) {
-      const prefix = category + '-';
+      const prefix = `${category}-`;
       if (tag.startsWith(prefix)) {
         return tag.substring(prefix.length);
       }
     }
-    return tag; // Return as-is if no prefix matches
+    return tag;
   }
 
   // Updated highlightTags to accept an array of tags
@@ -724,47 +528,106 @@
     return text.replace(regex, '<span class="highlight">$1</span>');
   }
 
-  // Function to Populate Category Dropdown with Full Names
+  // ========================
+  // DOM Manipulation Functions
+  // ========================
   function populateCategoryDropdown() {
     const categoryDropdown = document.getElementById('categoryDropdown');
     categories.forEach(category => {
       const option = document.createElement('option');
-      option.value = category; // Use abbreviation as the value
-      option.textContent = categoryMappings[category] || category; // Display full name or original if not mapped
+      option.value = category;
+      option.textContent = categoryMappings[category] || category;
       categoryDropdown.appendChild(option);
     });
   }
 
-  // Function to Populate Tag Dropdown Based on Selected Category
   function populateTagDropdown(selectedCategory = "") {
     const tagDropdown = document.getElementById('tagDropdown');
 
     if (!selectedCategory) {
-      tagDropdown.style.display = 'none'; // Hide the tag dropdown
+      tagDropdown.style.display = 'none';
       return;
     } else {
-      tagDropdown.style.display = ''; // Show the tag dropdown
+      tagDropdown.style.display = '';
     }
 
-    // Update the placeholder text with the selected category's full name
     const categoryName = categoryMappings[selectedCategory] || selectedCategory;
     tagDropdown.innerHTML = `<option value="">Select tag in ${categoryName} category</option>`;
 
     const sortedTags = Array.from(allTags).sort();
     sortedTags.forEach(tag => {
-      if (tag.startsWith(selectedCategory + '-') || tag === selectedCategory) {
+      if (tag.startsWith(`${selectedCategory}-`) || tag === selectedCategory) {
         const option = document.createElement('option');
-        option.value = tag; // Keep the original tag with prefix as the value
-        option.textContent = stripCategoryPrefix(tag); // Display tag without prefix
+        option.value = tag;
+        option.textContent = stripCategoryPrefix(tag);
         tagDropdown.appendChild(option);
       }
     });
   }
 
-  document.getElementById('search').addEventListener('input', performSearch);
+  // ========================
+  // URL Parameter Functions
+  // ========================
+  function updateURLParameters() {
+    const searchParams = new URLSearchParams();
+    const category = document.getElementById('categoryDropdown').value;
+    const tag = document.getElementById('tagDropdown').value;
+    const query = document.getElementById('search').value;
+    const onlyGoodOnes = document.getElementById('goodOneCheckbox').checked;
+    const selectedTitle = document.querySelector('.highlighted-suggestion')?.textContent;
 
-  let searchWorker;
+    if (lastUserAction === 'search') {
+      if (category) searchParams.set('category', category);
+      if (tag) searchParams.set('tag', tag);
+      if (query) searchParams.set('query', query);
+      if (onlyGoodOnes) searchParams.set('goodOnes', 'true');
+    } else if (lastUserAction === 'title' && selectedTitle) {
+      searchParams.set('title', encodeURIComponent(selectedTitle));
+    }
 
+    const newURL = `${window.location.pathname}?${searchParams.toString()}`;
+    history.pushState(null, '', newURL);
+  }
+
+  function loadFromURLParameters() {
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    const selectedTitle = searchParams.get('title');
+    if (selectedTitle) {
+      lastUserAction = 'title';
+      // We'll handle this after the initial search is performed
+      setTimeout(() => {
+        const decodedTitle = decodeURIComponent(selectedTitle);
+        const suggestionElement = Array.from(document.querySelectorAll('.suggestion'))
+          .find(el => el.textContent.trim() === decodedTitle);
+        if (suggestionElement) {
+          showPost(decodedTitle, suggestionElement);
+        }
+      }, 100);
+    } else {
+      lastUserAction = 'search';
+      const category = searchParams.get('category');
+      if (category) {
+        document.getElementById('categoryDropdown').value = category;
+        populateTagDropdown(category);
+      }
+
+      const tag = searchParams.get('tag');
+      if (tag) document.getElementById('tagDropdown').value = tag;
+
+      const query = searchParams.get('query');
+      if (query) document.getElementById('search').value = query;
+
+      const onlyGoodOnes = searchParams.get('goodOnes');
+      if (onlyGoodOnes === 'true') document.getElementById('goodOneCheckbox').checked = true;
+    }
+
+    performSearch();
+  }
+
+  // ========================
+  // Search Functions
+  // ========================
   function initializeWorker() {
     if (window.Worker) {
       const workerCode = `
@@ -830,8 +693,6 @@
     }
   }
 
-  initializeWorker();
-
   function performSearch() {
     const query = document.getElementById('search').value.trim().toLowerCase();
     const selectedTag = document.getElementById('tagDropdown').value || null;
@@ -841,9 +702,13 @@
     if (searchWorker) {
       searchWorker.postMessage({ query, files, selectedTag, selectedCategory, onlyGoodOnes });
     } else {
-      // Fallback to synchronous search if Web Workers are not supported
       const results = performSearchSync(query, selectedTag, selectedCategory, onlyGoodOnes);
       displayResults(results);
+    }
+
+    if (!initialLoad) {
+      lastUserAction = 'search';
+      updateURLParameters();
     }
   }
 
@@ -1014,6 +879,29 @@
       });
       suggestionsDiv.appendChild(suggestionsFragment);
     }
+
+    // If there's a title in the URL, select it after displaying results
+    if (lastUserAction === 'title') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedTitle = urlParams.get('title');
+      if (selectedTitle) {
+        const decodedTitle = decodeURIComponent(selectedTitle);
+        const suggestionElement = Array.from(document.querySelectorAll('.suggestion'))
+          .find(el => el.textContent.trim() === decodedTitle);
+        if (suggestionElement) {
+          showPost(decodedTitle, suggestionElement);
+        }
+      }
+    }
+  }
+
+  // ========================
+  // Event Handlers
+  // ========================
+  function filterTagsAndHighlight() {
+    const selectedCategory = document.getElementById('categoryDropdown').value;
+    populateTagDropdown(selectedCategory);
+    performSearch();
   }
 
   function showPost(selectedTitle, suggestionElement) {
@@ -1053,14 +941,34 @@
       suggestion.classList.remove('highlighted-suggestion');
     });
     suggestionElement.classList.add('highlighted-suggestion');
+
+    if (!initialLoad) {
+      lastUserAction = 'title';
+      updateURLParameters();
+    }
   }
 
-  // Function to Filter Tags and Highlight Based on Selected Category
-  function filterTagsAndHighlight() {
-    const selectedCategory = document.getElementById('categoryDropdown').value;
-    populateTagDropdown(selectedCategory); // Update Tag Dropdown based on Category
-    performSearch(); // Perform search with updated tags and highlighting
-  }
+  // ========================
+  // Initialization
+  // ========================
+  document.getElementById('search').addEventListener('input', debounce(performSearch, 300));
+  document.getElementById('categoryDropdown').addEventListener('change', filterTagsAndHighlight);
+  document.getElementById('tagDropdown').addEventListener('change', performSearch);
+  document.getElementById('goodOneCheckbox').addEventListener('change', performSearch);
+
+  // Initialize the application
+  (async function init() {
+    try {
+      await Promise.all(fileNames.map(fetchFile));
+      populateCategoryDropdown();
+      loadFromURLParameters();
+      initialLoad = false;
+    } catch (error) {
+      console.error('Error initializing application:', error);
+    }
+  })();
+
+  initializeWorker();
 </script>
 
 </body>
