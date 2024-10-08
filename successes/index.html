@@ -30,7 +30,6 @@
     <!-- Options will be populated by JavaScript -->
   </select>
 
-  <label class="hidden"><input type="checkbox" id="goodOneCheckbox" onchange="performSearch()"> recommended only</label>
 
   <div id="suggestions" class="suggestions"></div>
 </div>
@@ -340,58 +339,45 @@
   function removeTags(text) {
     let result = '';
     let index = 0;
+    let tagStack = [];
 
     while (index < text.length) {
       if (text[index] === '#') {
         let tagStart = index + 1;
         // Read tag name until we reach '{', ' ', or a newline
-        while (
-                tagStart < text.length &&
-                /[^\s{]/.test(text[tagStart])
-                ) {
+        while (tagStart < text.length && /[^\s{]/.test(text[tagStart])) {
           tagStart++;
         }
+        
         // Check if it's followed by '{{'
         if (text[tagStart] === '{' && text[tagStart + 1] === '{') {
-          // Capture the content inside '{{...}}', handling nesting
-          let depth = 1;
-          let contentStart = tagStart + 2;
-          let contentEnd = contentStart;
-          while (contentEnd < text.length && depth > 0) {
-            if (text[contentEnd] === '{' && text[contentEnd + 1] === '{') {
-              depth++;
-              contentEnd += 2;
-            } else if (text[contentEnd] === '}' && text[contentEnd + 1] === '}') {
-              depth--;
-              contentEnd += 2;
-            } else {
-              contentEnd++;
-            }
-          }
-          if (depth !== 0) {
-            // Unbalanced braces, treat as normal text
-            result += text[index];
-            index++;
-            continue;
-          }
-          // Extract the content inside the outermost '{{...}}'
-          const content = text.substring(contentStart, contentEnd - 2);
-          // Recursively remove any nested tags within the content
-          const processedContent = removeTags(content);
-          // Append the processed content to the result
-          result += processedContent;
-          // Move the index to the end of the current tag
-          index = contentEnd;
+          tagStack.push({ start: index, contentStart: tagStart + 2 });
+          index = tagStart + 2;
         } else {
           // Not a tag with '{{', include as normal text
           result += text.substring(index, tagStart);
           index = tagStart;
         }
+      } else if (text[index] === '}' && text[index + 1] === '}' && tagStack.length > 0) {
+        const lastTag = tagStack.pop();
+        const content = text.substring(lastTag.contentStart, index);
+        
+        // Recursively process the content to handle nested tags
+        const processedContent = removeTags(content);
+        
+        if (tagStack.length === 0) {
+          // This is the outermost tag, add the processed content to the result
+          result += processedContent;
+        }
+        index += 2;
       } else {
-        result += text[index];
+        if (tagStack.length === 0) {
+          result += text[index];
+        }
         index++;
       }
     }
+
     return result;
   }
 
@@ -573,14 +559,12 @@
     const category = document.getElementById('categoryDropdown').value;
     const tag = document.getElementById('tagDropdown').value;
     const query = document.getElementById('search').value;
-    const onlyGoodOnes = document.getElementById('goodOneCheckbox').checked;
     const selectedTitle = document.querySelector('.highlighted-suggestion')?.textContent;
 
     if (lastUserAction === 'search') {
       if (category) searchParams.set('category', category);
       if (tag) searchParams.set('tag', tag);
       if (query) searchParams.set('query', query);
-      if (onlyGoodOnes) searchParams.set('goodOnes', 'true');
     } else if (lastUserAction === 'title' && selectedTitle) {
       searchParams.set('title', encodeURIComponent(selectedTitle));
     }
@@ -617,9 +601,6 @@
 
       const query = searchParams.get('query');
       if (query) document.getElementById('search').value = query;
-
-      const onlyGoodOnes = searchParams.get('goodOnes');
-      if (onlyGoodOnes === 'true') document.getElementById('goodOneCheckbox').checked = true;
     }
 
     performSearch();
@@ -632,17 +613,11 @@
     if (window.Worker) {
       const workerCode = `
       self.onmessage = function (e) {
-        const { query, files, selectedTag, selectedCategory, onlyGoodOnes } = e.data;
+        const { query, files, selectedTag, selectedCategory } = e.data;
         const results = [];
 
         Object.keys(files).forEach((fileName) => {
           const { contentArray, hasGoodOneTag } = files[fileName];
-
-          // Filter files based on the 'onlyGoodOnes' flag and 'hasGoodOneTag'
-          if (onlyGoodOnes && !hasGoodOneTag) {
-            // Skip this file
-            return;
-          }
 
           let fileMatchesCriteria = false;
 
@@ -697,12 +672,11 @@
     const query = document.getElementById('search').value.trim().toLowerCase();
     const selectedTag = document.getElementById('tagDropdown').value || null;
     const selectedCategory = document.getElementById('categoryDropdown').value || null;
-    const onlyGoodOnes = document.getElementById('goodOneCheckbox').checked;
 
     if (searchWorker) {
-      searchWorker.postMessage({ query, files, selectedTag, selectedCategory, onlyGoodOnes });
+      searchWorker.postMessage({ query, files, selectedTag, selectedCategory });
     } else {
-      const results = performSearchSync(query, selectedTag, selectedCategory, onlyGoodOnes);
+      const results = performSearchSync(query, selectedTag, selectedCategory);
       displayResults(results);
     }
 
@@ -712,17 +686,11 @@
     }
   }
 
-  function performSearchSync(query, selectedTag, selectedCategory, onlyGoodOnes) {
+  function performSearchSync(query, selectedTag, selectedCategory) {
     const results = [];
 
     Object.keys(files).forEach((fileName) => {
       const { contentArray, hasGoodOneTag } = files[fileName];
-
-      // Filter files based on the 'onlyGoodOnes' flag and 'hasGoodOneTag'
-      if (onlyGoodOnes && !hasGoodOneTag) {
-        // Skip this file
-        return;
-      }
 
       let fileMatchesCriteria = false;
 
@@ -954,7 +922,6 @@
   document.getElementById('search').addEventListener('input', debounce(performSearch, 300));
   document.getElementById('categoryDropdown').addEventListener('change', filterTagsAndHighlight);
   document.getElementById('tagDropdown').addEventListener('change', performSearch);
-  document.getElementById('goodOneCheckbox').addEventListener('change', performSearch);
 
   // Initialize the application
   (async function init() {
