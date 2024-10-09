@@ -799,15 +799,19 @@
         const filePostDiv = document.createElement('div');
         let processedPost;
 
+        // Always start by removing all tags
+        const cleanedPost = removeTags(rawPost);
+
         if (tagsToHighlight.length > 0) {
-          // Use rawPost which contains tags
-          processedPost = rawPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
-          // Highlight tags based on selected category and tag
-          processedPost = highlightTags(processedPost, tagsToHighlight);
+          // Use rawPost for highlighting, but apply removeTags after highlighting
+          processedPost = highlightTags(rawPost, tagsToHighlight);
+          processedPost = removeTags(processedPost);
         } else {
-          // Use cleanPost which has tags removed
-          processedPost = post.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
+          processedPost = cleanedPost;
         }
+
+        // Replace HTML entities
+        processedPost = processedPost.replace(/&amp;#x200B;/g, ' ').replace(/&amp;nbsp;/g, ' ');
 
         // Highlight search query in the post
         processedPost = highlightText(processedPost, query);
