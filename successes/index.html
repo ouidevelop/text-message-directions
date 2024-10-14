@@ -54,7 +54,8 @@
     "book": "book",
     "other-activities": "other activities",
     "right-mind": "right mind",
-    "withdrawal": "withdrawal"
+    "withdrawal": "withdrawal",
+    "tech-not-work": "not work" // Add this new category
   };
 
   const categories = Object.keys(categoryMappings);
@@ -435,11 +436,16 @@
     return Array.from(tags);
   }
 
-  // Function to Strip Category Prefix from Tag
+  // Update the stripCategoryPrefix function
   function stripCategoryPrefix(tag) {
+    // Special case for "tech-not-work"
+    if (tag === "tech-not-work") return "not work";
+
     for (const category of categories) {
       const prefix = `${category}-`;
       if (tag.startsWith(prefix)) {
+        // Special case for blockers
+        if (tag.startsWith('tech-blocker')) return 'blockers';
         return tag.substring(prefix.length);
       }
     }
@@ -448,7 +454,7 @@
 
   // Updated highlightTags to accept an array of tags
   function highlightTags(text, tagsToHighlight) {
-    if (!tagsToHighlight || tagsToHighlight.length === 0) return text; // Do not highlight if no tags are selected
+    if (!tagsToHighlight || tagsToHighlight.length === 0) return text;
 
     let result = '';
     let index = 0;
@@ -456,18 +462,12 @@
     while (index < text.length) {
       if (text[index] === '#') {
         let tagStart = index + 1;
-        // Read tag name until we reach '{', ' ', or a newline
-        while (
-                tagStart < text.length &&
-                /[^\s{]/.test(text[tagStart])
-                ) {
+        while (tagStart < text.length && /[^\s{]/.test(text[tagStart])) {
           tagStart++;
         }
         const tagName = text.substring(index + 1, tagStart);
 
-        // Check if it's followed by '{{' indicating tagged content
         if (text[tagStart] === '{' && text[tagStart + 1] === '{') {
-          // Find the matching '}}', handling nested tags
           let depth = 1;
           let contentStart = tagStart + 2;
           let contentEnd = contentStart;
@@ -486,17 +486,18 @@
 
           const content = text.substring(contentStart, contentEnd - 2);
 
-          if (tagsToHighlight.includes(tagName)) {
-            // Highlight the content
+          // Check if the tag should be highlighted
+          const shouldHighlight = tagsToHighlight.includes(tagName) ||
+                                  (tagsToHighlight.includes('tech-blocker') && tagName.startsWith('tech-blocker'));
+
+          if (shouldHighlight) {
             result += `<span class="tag-highlight">${content}</span>`;
           } else {
-            // Append content without highlighting
             result += content;
           }
           index = contentEnd;
           continue;
         } else {
-          // Not a tag with '{{', include as normal text
           result += text.substring(index, tagStart);
           index = tagStart;
         }
@@ -527,6 +528,7 @@
     });
   }
 
+  // Update the populateTagDropdown function
   function populateTagDropdown(selectedCategory = "") {
     const tagDropdown = document.getElementById('tagDropdown');
 
@@ -541,12 +543,25 @@
     tagDropdown.innerHTML = `<option value="">Select tag in ${categoryName} category</option>`;
 
     const sortedTags = Array.from(allTags).sort();
+    const addedTags = new Set();
+
     sortedTags.forEach(tag => {
       if (tag.startsWith(`${selectedCategory}-`) || tag === selectedCategory) {
-        const option = document.createElement('option');
-        option.value = tag;
-        option.textContent = stripCategoryPrefix(tag);
-        tagDropdown.appendChild(option);
+        let displayTag = stripCategoryPrefix(tag);
+        
+        // Special case for blockers
+        if (tag.startsWith('tech-blocker')) {
+          displayTag = 'blockers';
+          tag = 'tech-blocker'; // Use a generic tag for all blockers
+        }
+
+        if (!addedTags.has(displayTag)) {
+          const option = document.createElement('option');
+          option.value = tag;
+          option.textContent = displayTag;
+          tagDropdown.appendChild(option);
+          addedTags.add(displayTag);
+        }
       }
     });
   }
@@ -627,8 +642,16 @@
             const postLower = post.toLowerCase();
 
             const matchesQuery = titleLower.includes(query) || postLower.includes(query);
-            const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
-            const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
+            let matchesTag = selectedTag ? tags.includes(selectedTag) : true;
+            
+            // Special case for blockers
+            if (selectedTag === 'tech-blocker') {
+              matchesTag = tags.some(tag => tag.startsWith('tech-blocker'));
+            }
+
+            const matchesCategory = selectedCategory ? 
+              (selectedCategory === 'tech-not-work' ? tags.includes('tech-not-work') : tags.some(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory)) 
+              : true;
 
             if (matchesQuery && matchesTag && matchesCategory) {
               fileMatchesCriteria = true;
@@ -686,6 +709,7 @@
     }
   }
 
+  // Update the performSearchSync function
   function performSearchSync(query, selectedTag, selectedCategory) {
     const results = [];
 
@@ -700,8 +724,16 @@
         const postLower = post.toLowerCase();
 
         const matchesQuery = titleLower.includes(query) || postLower.includes(query);
-        const matchesTag = selectedTag ? tags.includes(selectedTag) : true;
-        const matchesCategory = selectedCategory ? tags.some(tag => tag.startsWith(selectedCategory + '-')) || tags.includes(selectedCategory) : true;
+        let matchesTag = selectedTag ? tags.includes(selectedTag) : true;
+        
+        // Special case for blockers
+        if (selectedTag === 'tech-blocker') {
+          matchesTag = tags.some(tag => tag.startsWith('tech-blocker'));
+        }
+
+        const matchesCategory = selectedCategory ? 
+          (selectedCategory === 'tech-not-work' ? tags.includes('tech-not-work') : tags.some(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory)) 
+          : true;
 
         if (matchesQuery && matchesTag && matchesCategory) {
           fileMatchesCriteria = true;
@@ -745,6 +777,10 @@
     if (selectedTag) {
       // Only highlight the selected tag
       tagsToHighlight = [selectedTag];
+      // Special case for blockers
+      if (selectedTag === 'tech-blocker') {
+        tagsToHighlight = Array.from(allTags).filter(tag => tag.startsWith('tech-blocker'));
+      }
     } else if (selectedCategory) {
       // Highlight all tags in the selected category
       tagsToHighlight = Array.from(allTags).filter(tag => tag.startsWith(selectedCategory + '-') || tag === selectedCategory);
