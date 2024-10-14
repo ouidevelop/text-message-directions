@@ -8,6 +8,12 @@
 </head>
 <body>
 
+<!-- Add this right after the <body> tag -->
+<div id="loading-indicator" class="loading-indicator">
+  <div class="spinner"></div>
+  <p>Loading content...</p>
+</div>
+
 <!-- Introductory Content -->
 <div id="intro" class="intro">
   <h1>r/nosurf Success Posts</h1>
@@ -36,6 +42,13 @@
 
 <!-- Dynamic Content Container -->
 <div id="content-container" class="content-container"></div>
+
+<!-- Add this right after the <div id="content-container" class="content-container"></div> -->
+<div id="skeleton-screen" class="skeleton-screen">
+  <div class="skeleton-item"></div>
+  <div class="skeleton-item"></div>
+  <div class="skeleton-item"></div>
+</div>
 
 <!-- Include Marked.js -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -963,15 +976,35 @@
   document.getElementById('categoryDropdown').addEventListener('change', filterTagsAndHighlight);
   document.getElementById('tagDropdown').addEventListener('change', performSearch);
 
-  // Initialize the application
+  // Add this function to show/hide the loading indicator
+  function toggleLoadingIndicator(show) {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const skeletonScreen = document.getElementById('skeleton-screen');
+    const contentContainer = document.getElementById('content-container');
+
+    if (show) {
+      loadingIndicator.style.display = 'flex';
+      skeletonScreen.style.display = 'block';
+      contentContainer.style.display = 'none';
+    } else {
+      loadingIndicator.style.display = 'none';
+      skeletonScreen.style.display = 'none';
+      contentContainer.style.display = 'block';
+    }
+  }
+
+  // Update the init function
   (async function init() {
     try {
+      toggleLoadingIndicator(true); // Show loading indicator
       await Promise.all(fileNames.map(fetchFile));
       populateCategoryDropdown();
       loadFromURLParameters();
       initialLoad = false;
+      toggleLoadingIndicator(false); // Hide loading indicator
     } catch (error) {
       console.error('Error initializing application:', error);
+      toggleLoadingIndicator(false); // Hide loading indicator even if there's an error
     }
   })();
 
