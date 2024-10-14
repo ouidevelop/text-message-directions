@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Collection and Tagging Procedure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Procedure to Collect and Tag Success Posts</h1>
+    
+    <p><a href="index.html">&larr; Back to Success Posts</a></p>
+
+    <p>First, using <a href="https://www.reddit.com/r/pushshift/comments/194k9y4/reddit_dump_files_through_the_end_of_2023/">Pushshift</a>, I found all <strong>33764 posts</strong> on <a href="https://www.reddit.com/r/nosurf">/r/nosurf</a> up until the end of 2023.</p>
+    <p>Then I filtered them down to "success posts," which I considered to be <strong>posts where the person significantly reduced their overall screen time for at least a month</strong>.</p>
+    <p>I started by filtering posts using heuristics. For example, if the title ended with a "?", I figured it was a question and not a success post. After applying these filters, I manually reviewed the remaining <strong>17013 titles</strong> and selected those that seemed like they could possibly be successes. That gave me <strong>678 candidate posts</strong>. After reading through each candidate post, I found <strong>160 posts that met the criteria</strong> (not including multiple posts from the same author).</p>
+    <p>I then read all of the success posts and manually tagged information that I wanted to get numbers on. I was looking for techniques used, <a href="https://internot.tools/successes/?category=a-t">apps people were addicted to</a>, the <a href="https://internot.tools/successes/?category=ben">benefits of quitting</a>, <a href="https://internot.tools/successes/?category=symp">withdrawal symptoms</a>, among other things.</p>
+    
+    <h3>Problems with this approach:</h3>
+    <p>This selection process almost certainly missed some success posts, but as a sanity check I compared my list to previously compiled success stories and found that I had caught them all or explicitly rejected those that didn't meet my specific criteria.</p>
+    <p>Manually tagging data is extremely fraught. For one thing, I'm sure I missed a lot of potential tags (like not counting as benefits all the benefits listed in a post). Also, deciding how to categorize things is tricky and I'm sure I wasn't perfectly consistent. And there is often more than one way to categorize things, and the somewhat arbitrary decisions I made probably affected the counts significantly.</p>
+    <p>Still, hopefully we can learn something here despite these limitations.</p>
+  </div>
+</body>
+</html>
