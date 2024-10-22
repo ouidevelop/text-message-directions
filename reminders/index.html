@@ -8,8 +8,8 @@
     <meta name="generator" content="Jekyll v3.9.5" />
     <meta property="og:title" content="Internot" />
     <meta property="og:locale" content="en_US" />
-    <meta name="description" content="Get text message based weather, directions, contact info, definitions, and reminders" />
-    <meta property="og:description" content="Get text message based weather, directions, contact info, definitions, and reminders" />
+    <meta name="description" content="Get reminder texts for everyday tasks and important events" />
+    <meta property="og:description" content="Get reminder texts for everyday tasks and important events" />
     <link rel="canonical" href="https://internot.tools" />
     <meta property="og:url" content="https://internot.tools" />
     <meta property="og:site_name" content="Internot" />
@@ -56,33 +56,46 @@
 
 <header class="page-header" role="banner">
     <h1 class="project-name">Internot</h1>
-    <h2 class="project-tagline">Get single and recuring reminders by text message</h2>
+    <h2 class="project-tagline">Get reminder texts for everyday tasks and important events</h2>
     <a href="../" class="btn">Read about the Information Service</a>
 </header>
 
 <main id="content" class="main-content" role="main">
     <h1 id="info-by-text">Internot Reminders</h1>
 
-    <p>This is a service that provides text message based single or recurring reminders. THIS SERVICE IS CURRENTLY IN BETA. For now, it is free, but I will probably need to charge something in order to cover the costs at some point.</p>
+    <p> <strong>This service is currently free</strong> because it is <strong>in BETA</strong>. I will probably need to charge something in order to cover the costs at some point.</p>
 
-    <p>To use this you have to send a text message to <strong>1-888-880-4465</strong> (this is a different number than the info service) with the right format depending on what you want.</p>
+    <h2> How to use it: </h2>
 
-    <p>Before you can add any reminders, you'll have to first set your timezone with the "location" command (see below)</p>
+    <p> <strong>Step 1</strong> Send a text to <strong>1-888-880-4465</strong> telling the service your location (see below for the correct format). This is only so that we can know what timezone to use.</p>
+    <p> <strong>Step 2</strong> Set a reminder for either one-time events, like an appointment, or recurring events like birthdays.</p>
+    <p> <strong>Step 3</strong> We will notify you by text when the time comes!</p>
+
+    <p> <strong>NOTE:</strong> This only works in the USA and Canada.</p>
+
+    <h2>Set Timezone</h2>
+    <p>To set your timezone: <code class="language-plaintext highlighter-rouge">location [location]</code> </p>
+
+    <div class="indent"><p><strong>Example:</strong> <code class="language-plaintext highlighter-rouge">location brooklyn, ny</code></p></div>
 
     <h2>Add a Reminder</h2>
     <p>To add a reminder, use the form <code class="language-plaintext highlighter-rouge">remind me [future time] [optional: message in quotes]</code></p>
 
-    <p>For example:</p>
-    <p><code class="language-plaintext highlighter-rouge">remind me in 2 hours</code></p>
-    <p><code class="language-plaintext highlighter-rouge">remind me tuesday at 8 am "take out the trash"</code></p>
-    <p><code class="language-plaintext highlighter-rouge">remind me tuesday at 8 am to take out the trash</code> will also work. </p>
+    <div class="indent">
+        <p><strong>Examples:</strong></p>
+        <p><code class="language-plaintext highlighter-rouge">remind me in 2 hours</code></p>
+        <p><code class="language-plaintext highlighter-rouge">remind me tuesday at 8 am "take out the trash"</code></p>
+        <p><code class="language-plaintext highlighter-rouge">remind me tuesday at 8 am to take out the trash</code> will also work. </p>
+    </div>
 
     <h2>Add a Repeating Reminder</h2>
     <p>To add a reminder that repeats at a consistent interval, use the form <code class="language-plaintext highlighter-rouge">every [interval]</code></p>
 
-    <p>For example:</p>
-    <p><code class="language-plaintext highlighter-rouge">every november 1st</code></p>
-    <p><code class="language-plaintext highlighter-rouge">every tuesday at 7pm "trash"</code></p>
+    <div class="indent">
+        <p><strong>Examples:</strong></p>
+        <p><code class="language-plaintext highlighter-rouge">every november 1st</code></p>
+        <p><code class="language-plaintext highlighter-rouge">every tuesday at 7pm "trash"</code></p>
+    </div>
 
     <h2>List Reminders</h2>
     <p>To list all reminders use: <code class="language-plaintext highlighter-rouge">list</code></p>
@@ -91,24 +104,19 @@
     <h2>Remove Reminder</h2>
     <p>to delete a specific reminder, use: <code class="language-plaintext highlighter-rouge">remove [id]</code> </p>
 
-    <p>For example: <code class="language-plaintext highlighter-rouge">remove 123</code></p>
-    <p>Your reminder id will be given to you when you create a reminder</p>
+    <div class="indent"><p><strong>Example:</strong> <code class="language-plaintext highlighter-rouge">remove 123</code></p></div>
+    <p>Your reminder id will be given to you when you create a reminder.</p>
 
     <h2>Remove All Reminders</h2>
-    <p>To delete all your reminders, use the command: <code class="language-plaintext highlighter-rouge">remove all</code></p>
-
-    <h2>Set Timezone</h2>
-    <p>To set your timezone, use the form: <code class="language-plaintext highlighter-rouge">location [location]</code> </p>
-
-    <p>For example: <code class="language-plaintext highlighter-rouge">location brooklyn, ny</code></p>
+    <p>To delete all your reminders: <code class="language-plaintext highlighter-rouge">remove all</code></p>
 
     <h2>Set 24 or 12 Hour Clock</h2>
-    <p>To set your preferred time format, use the command <code class="language-plaintext highlighter-rouge">Clock 12</code> or <code class="language-plaintext highlighter-rouge">Clock 24</code> </p>
+    <p>To set your preferred time format: <code class="language-plaintext highlighter-rouge">Clock 12</code> or <code class="language-plaintext highlighter-rouge">Clock 24</code> </p>
 
     <h2>Provide Feedback</h2>
-    <p>To provide feedback, use the form <code class="language-plaintext highlighter-rouge">feedback [your feedback]</code></p>
+    <p>To provide feedback: <code class="language-plaintext highlighter-rouge">feedback [your feedback]</code></p>
 
-    <p>For example: <code class="language-plaintext highlighter-rouge">feedback, an alert came too early!</code></p>
+    <div class="indent"><p><strong>Example:</strong> <code class="language-plaintext highlighter-rouge">feedback, an alert came too early!</code></p></div>
 
     <!--    <p>Built by Oui Develop (at http://ouidevelop.org)</p>-->
 

@@ -1,4 +1,8 @@
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
+.indent {
+    margin-left: 40px
+}
+
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap");html {
     font-family: sans-serif;
     -ms-text-size-adjust: 100%;
